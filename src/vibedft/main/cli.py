@@ -24,6 +24,7 @@ def _json_default(value: Any) -> str:
 def _run_qe_scf_review(argv: Sequence[str]) -> None:
     parser = argparse.ArgumentParser(prog="vibedft qe scf review")
     parser.add_argument("output_file", type=Path, help="QE pw.x output file to review")
+    parser.add_argument("--output", type=Path, default=None, help="Write JSON output to this path")
     parser.add_argument("--pretty", action="store_true", help="Pretty-print JSON output")
     parser.add_argument(
         "--fail-on-block",
@@ -39,14 +40,7 @@ def _run_qe_scf_review(argv: Sequence[str]) -> None:
             "ok": True,
             "result": asdict(result),
         }
-        print(
-            json.dumps(
-                payload,
-                indent=2 if args.pretty else None,
-                default=_json_default,
-                ensure_ascii=False,
-            ),
-        )
+        _emit_json(payload, pretty=args.pretty, output=args.output)
 
         if args.fail_on_block and result.status == "block":
             raise SystemExit(2)
@@ -61,15 +55,38 @@ def _run_qe_scf_review(argv: Sequence[str]) -> None:
                 "message": str(exc),
             },
         }
-        print(
-            json.dumps(
-                payload,
-                indent=2 if args.pretty else None,
-                default=_json_default,
-                ensure_ascii=False,
-            ),
+        payload_text = json.dumps(
+            payload,
+            indent=2 if args.pretty else None,
+            default=_json_default,
+            ensure_ascii=False,
         )
+        print(payload_text)
+        if args.output is not None:
+            try:
+                _safe_emit_json_file(payload_text, args.output)
+            except Exception:
+                pass
         raise SystemExit(1)
+
+
+def _safe_emit_json_file(payload_text: str, output: Path) -> None:
+    output = output.expanduser()
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(payload_text + "\n", encoding="utf-8")
+
+
+def _emit_json(payload: dict[str, Any], *, pretty: bool, output: Path | None) -> str:
+    payload_text = json.dumps(
+        payload,
+        indent=2 if pretty else None,
+        default=_json_default,
+        ensure_ascii=False,
+    )
+    if output is not None:
+        _safe_emit_json_file(payload_text, output)
+    print(payload_text)
+    return payload_text
 
 
 def main(argv: Sequence[str] | None = None) -> None:

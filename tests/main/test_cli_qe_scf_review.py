@@ -110,3 +110,44 @@ def test_qe_scf_review_cli_pretty_output_parsable(tmp_path: Path) -> None:
     payload = json.loads(payload_text)
 
     assert payload["ok"] is True
+
+
+def test_qe_scf_review_cli_output_file(tmp_path: Path) -> None:
+    output_file = tmp_path / "scf_pass.out"
+    json_file = tmp_path / "scf_review.json"
+    _write_qe_text(output_file, status="pass")
+
+    payload_text = _run_cli([
+        "qe",
+        "scf",
+        "review",
+        str(output_file),
+        "--output",
+        str(json_file),
+    ])
+    payload = json.loads(payload_text)
+    assert json_file.exists()
+
+    file_payload = json.loads(json_file.read_text(encoding="utf-8"))
+    assert file_payload == payload
+
+
+def test_qe_scf_review_cli_output_matches_stdout_keys(tmp_path: Path) -> None:
+    output_file = tmp_path / "scf_warn.out"
+    json_file = tmp_path / "scf_review_warn.json"
+    _write_qe_text(output_file, status="warn")
+
+    payload_text = _run_cli([
+        "qe",
+        "scf",
+        "review",
+        str(output_file),
+        "--output",
+        str(json_file),
+    ])
+    payload = json.loads(payload_text)
+    file_payload = json.loads(json_file.read_text(encoding="utf-8"))
+
+    assert file_payload["ok"] == payload["ok"] is True
+    assert file_payload["result"]["task"] == payload["result"]["task"] == "scf"
+    assert file_payload["result"]["status"] == payload["result"]["status"] == "warn"
