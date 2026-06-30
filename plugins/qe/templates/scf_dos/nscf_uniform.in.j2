@@ -1,0 +1,42 @@
+&CONTROL
+  calculation = 'nscf'
+  outdir = './out_nscf/'
+  prefix = '{{ qe.pw.control.prefix }}'
+  pseudo_dir = '{{ material.pseudo_dir }}'
+  verbosity = '{{ qe.pw.control.verbosity | default('high') }}'
+/
+
+&SYSTEM
+  ibrav = {{ qe.pw.system.ibrav | default(0) }}
+  nat = {{ material.atomic_positions | length }}
+  ntyp = {{ material.atomic_species | length }}
+  ecutwfc = {{ qe.pw.system.ecutwfc }}
+  ecutrho = {{ qe.pw.system.ecutrho }}
+  occupations = 'tetrahedra_opt'
+{% if qe.pw.system.tot_charge and qe.pw.system.tot_charge != 0 %}
+  tot_charge = {{ qe.pw.system.tot_charge }}
+{% endif %}
+/
+
+&ELECTRONS
+  conv_thr = {{ qe.pw.electrons.conv_thr | default('1.0d-12') }}
+  mixing_beta = {{ qe.pw.electrons.mixing_beta | default('4.0d-1') }}
+/
+
+ATOMIC_SPECIES
+{% for el, spec in material.atomic_species.items() %}
+{{ el }}  {{ spec.mass }}  {{ spec.pseudo }}
+{%- endfor %}
+
+CELL_PARAMETERS (angstrom)
+{% for row in material.cell_parameters %}
+  {{ "%14.9f"|format(row[0]) }} {{ "%14.9f"|format(row[1]) }} {{ "%14.9f"|format(row[2]) }}
+{%- endfor %}
+
+ATOMIC_POSITIONS (crystal)
+{% for atom in material.atomic_positions %}
+{{ atom.element }}  {{ "%20.10f"|format(atom.pos[0]) }} {{ "%20.10f"|format(atom.pos[1]) }} {{ "%20.10f"|format(atom.pos[2]) }}
+{%- endfor %}
+
+K_POINTS (automatic)
+{{ common.kpoints.grid[0] }} {{ common.kpoints.grid[1] }} {{ common.kpoints.grid[2] }} 0 0 0

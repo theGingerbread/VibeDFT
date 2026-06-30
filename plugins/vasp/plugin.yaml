@@ -1,0 +1,3 @@
+id: vasp
+name: VASP
+description: VASP adapter seed for INCAR/KPOINTS/POTCAR workflows and post-processing.

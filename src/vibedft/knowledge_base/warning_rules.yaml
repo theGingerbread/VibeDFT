@@ -1,0 +1,154 @@
+# VibeDFT — Warning / Risk Rules
+#
+# SEED KNOWLEDGE BASE documenting known risk patterns.  Actual detection
+# logic lives in the Python validator functions.  This file serves as
+# documentation and as a seed for future YAML-driven rule engines.
+#
+# Severity levels: error (will crash), warning (may produce wrong results),
+#                  info (optimisation / best-practice advice).
+
+rules:
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # pw.x — electronic structure
+  # ═══════════════════════════════════════════════════════════════════════════
+  - id: pw.metal_without_smearing
+    program: pw.x
+    severity: warning
+    condition: "occupations='fixed' AND (band gap < 0.05 eV OR tot_charge != 0)"
+    message: "Metallic or doped system using fixed occupations — convergence may fail."
+
+  - id: pw.ecutrho_ratio
+    program: pw.x
+    severity: warning
+    condition: "ecutrho / ecutwfc < 3.5"
+    message: "ecutrho/ecutwfc ratio below 4× — insufficient for norm-conserving pseudos."
+
+  - id: pw.kmesh_sparse_metal
+    program: pw.x
+    severity: warning
+    condition: "smearing is set AND nk1*nk2 < 64"
+    message: "K-mesh may be too sparse for a metallic system."
+
+  - id: pw.2d_vacuum_insufficient
+    program: pw.x
+    severity: warning
+    condition: "c-axis > 15 Å AND assume_isolated != '2D'"
+    message: "c-axis suggests 2D slab but Coulomb cutoff is not enabled."
+
+  - id: pw.2d_vc_relax_dofree
+    program: pw.x
+    severity: warning
+    condition: "calculation='vc-relax' AND assume_isolated='2D' AND cell_dofree != '2Dxy'"
+    message: "vc-relax on 2D slab should use cell_dofree='2Dxy' to fix the z-axis."
+
+  - id: pw.nosym_risky
+    program: pw.x
+    severity: info
+    condition: "nosym is true"
+    message: "nosym=.true. disables symmetry — k-point reduction lost; use only if necessary."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # ph.x — phonons
+  # ═══════════════════════════════════════════════════════════════════════════
+  - id: ph.prefix_mismatch
+    program: ph.x
+    severity: error
+    condition: "ph.prefix != scf.prefix"
+    message: "PH prefix does not match SCF prefix — ph.x will not find the save directory."
+
+  - id: ph.2d_nq3_not_1
+    program: ph.x
+    severity: error
+    condition: "nq3 != 1 AND system is 2D slab"
+    message: "nq3 must be 1 for 2D materials — out-of-plane phonon dispersion is meaningless."
+
+  - id: ph.epc_sparse_k
+    program: ph.x
+    severity: warning
+    condition: "electron_phonon is set AND (nq1 < 6 OR nq2 < 6)"
+    message: "EPC q-grid may be too sparse for converged λ."
+
+  - id: ph.tr2_ph_too_loose
+    program: ph.x
+    severity: warning
+    condition: "electron_phonon is set AND tr2_ph > 1e-12"
+    message: "tr2_ph may be too loose for EPC — aim for 1e-14 or tighter."
+
+  - id: ph.epc_missing_sigma
+    program: ph.x
+    severity: info
+    condition: "electron_phonon is set AND (el_ph_sigma not set OR el_ph_nsigma not set)"
+    message: "el_ph_sigma/el_ph_nsigma not set — using QE defaults for double-delta integration."
+
+  - id: ph.stability_not_epc
+    program: ph.x
+    severity: info
+    condition: "ldisp is true AND electron_phonon is not set"
+    message: "This is a phonon stability calculation (no EPC). Do not expect λ or Tc output."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # q2r.x — Fourier transform
+  # ═══════════════════════════════════════════════════════════════════════════
+  - id: q2r.la2f_forbidden
+    program: q2r.x
+    severity: error
+    condition: "la2F is true"
+    message: "la2F=.true. will CRASH q2r.x. Remove it. la2F only belongs in matdyn.x."
+
+  - id: q2r.missing_zasr
+    program: q2r.x
+    severity: warning
+    condition: "zasr not set"
+    message: "zasr not set — acoustic sum rule may not be applied."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # matdyn.x — phonon dispersion / DOS
+  # ═══════════════════════════════════════════════════════════════════════════
+  - id: matdyn.missing_asr
+    program: matdyn.x
+    severity: warning
+    condition: "asr not set AND zasr not set"
+    message: "Acoustic sum rule not applied — Γ-point acoustic modes may be non-zero."
+
+  - id: matdyn.la2f_wrong_place
+    program: matdyn.x
+    severity: warning
+    condition: "la2F is true AND dos is false"
+    message: "la2F=.true. in ordinary matdyn.x dispersion input — only needed for EPC-related DOS."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # lambda.x — Tc post-processing
+  # ═══════════════════════════════════════════════════════════════════════════
+  - id: lambda.mustar_outside_range
+    program: lambda.x
+    severity: warning
+    condition: "mustar < 0.05 OR mustar > 0.25"
+    message: "μ* outside typical range (0.08–0.15) — reported Tc may be unrealistic."
+
+  - id: lambda.single_grid_tc
+    program: lambda.x
+    severity: warning
+    condition: "only one PH grid has lambda.x output"
+    message: "Single-grid Tc is not converged — use at least two k-grids and Tc overlap analysis."
+
+  - id: lambda.no_preceding_epc
+    program: lambda.x
+    severity: error
+    condition: "no PH_EPC task found in the same case"
+    message: "lambda.x requires a completed ph.x EPC calculation as input."
+
+  # ═══════════════════════════════════════════════════════════════════════════
+  # Workflow-level
+  # ═══════════════════════════════════════════════════════════════════════════
+  - id: workflow.pwxall_ordering
+    program: any
+    severity: error
+    condition: "PH_EPC workflow with pwx before pwxall"
+    message: "pwxall must run BEFORE pwx in the EPC chain.  pwx→pwxall order overwrites the dense save."
+
+  - id: workflow.missing_scf
+    program: any
+    severity: error
+    condition: "BANDS or DOS or PH task found without preceding SCF"
+    message: "This calculation requires an SCF charge density. Run SCF first."

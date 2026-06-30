@@ -1,0 +1,25 @@
+
+     EPW v5.7 starts
+
+     Wannierization on 9 bands
+
+     Final Spread
+     WF centre and spread    1  (  0.0000,  0.0000,  0.0000 )    1.2345
+     WF centre and spread    2  (  0.0000,  0.0000,  0.0000 )    1.5678
+     WF centre and spread    3  (  0.0000,  0.0000,  0.0000 )    2.3456
+
+     Electron-phonon coupling strength
+
+     lambda [    1] =   1.3500
+     lambda [    2] =   1.3400
+     lambda [    3] =   1.3200
+
+     omega_log    =   180.000 K
+     Tc (McMillan-Allen-Dynes) =    8.500 K
+
+     Fine k-mesh:  48  48  1
+     Fine q-mesh:   8   8  1
+
+     EPW          :   120.00s CPU
+
+     JOB DONE

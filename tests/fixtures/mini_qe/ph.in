@@ -1,0 +1,13 @@
+&INPUTPH
+  prefix = 'test'
+  outdir = './out_scf/'
+  fildyn = 'test.dyn'
+  ldisp = .true.
+  nq1 = 8
+  nq2 = 8
+  nq3 = 1
+  start_q = 1
+  last_q = 1
+  tr2_ph = 1.0d-14
+  trans = .true.
+/

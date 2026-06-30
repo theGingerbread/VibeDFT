@@ -1,0 +1,28 @@
+&CONTROL
+  calculation = 'scf',
+  prefix = 'hfi2_e005',
+  outdir = './out',
+/
+&SYSTEM
+  ibrav = 0,
+  nat = 3,
+  ntyp = 2,
+  ecutwfc = 90,
+  ecutrho = 720,
+/
+&ELECTRONS
+  conv_thr = 1.0d-8,
+/
+ATOMIC_SPECIES
+Hf 178.49 Hf.pbe-spn-kjpaw_psl.1.0.0.UPF
+I 126.90 I.pbe-n-kjpaw_psl.1.0.0.UPF
+ATOMIC_POSITIONS crystal
+Hf 0.000000 0.000000 0.500000
+I  0.333333 0.666667 0.600000
+I  0.666667 0.333333 0.400000
+K_POINTS automatic
+16 16 1 0 0 0
+CELL_PARAMETERS angstrom
+3.900000 0.000000 0.000000
+-1.950000 3.377499 0.000000
+0.000000 0.000000 25.000000

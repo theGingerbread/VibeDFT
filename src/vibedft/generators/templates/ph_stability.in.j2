@@ -1,0 +1,18 @@
+{# ph_stability.in.j2 — PHONON STABILITY ONLY, NO EPC #}
+{# electron_phonon is NEVER set here. This is NOT an EPC calculation. #}
+{# NOTE: QE 7.2 ph.x does NOT accept 'trans' with ldisp; removed. #}
+{# Use ldisp + start_irr/last_irr for gamma-only; nq1/nq2/nq3 for full grid. #}
+&INPUTPH
+  prefix = '{{ stage_prefix }}'
+  outdir = './out_ph/'
+  fildyn = '{{ fildyn }}'
+  ldisp = .true.
+  nq1 = {{ q_grid[0] }}
+  nq2 = {{ q_grid[1] }}
+  nq3 = {{ q_grid[2] }}
+  tr2_ph = 1.0d-14
+  alpha_mix(1) = {{ ph_alpha_mix|default(0.7) }}
+  nmix_ph = {{ ph_nmix|default(4) }}
+  recover = .false.
+  epsil = .false.
+/

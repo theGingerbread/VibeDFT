@@ -1,0 +1,527 @@
+parameters:
+  # ── dos.x (DOS post-processing) ──
+  - id: qe.dos.prefix
+    software: qe
+    program: dos.x
+    namelist: DOS
+    name: prefix
+    type: string
+    required: true
+    default: null
+    category: identity
+    ui:
+      label: DOS prefix
+      level: basic
+      widget: text
+
+  - id: qe.dos.outdir
+    software: qe
+    program: dos.x
+    namelist: DOS
+    name: outdir
+    type: string
+    required: true
+    default: ./out_scf/
+    category: io
+
+  - id: qe.dos.source_outdir
+    software: qe
+    program: dos.x
+    namelist: DOS
+    name: source_outdir
+    type: string
+    required: false
+    category: io
+    ui:
+      label: Source outdir for DOS (NSCF save)
+      level: advanced
+      widget: text
+      help: "NSCF outdir to read from (default: qe.dos.outdir)"
+    ui:
+      label: Output directory
+      level: basic
+      widget: text
+
+  - id: qe.dos.Emin
+    software: qe
+    program: dos.x
+    namelist: DOS
+    name: Emin
+    type: float
+    unit: eV
+    required: false
+    default: null
+    category: range
+    ui:
+      label: DOS energy minimum
+      level: advanced
+      widget: number
+
+  - id: qe.dos.Emax
+    software: qe
+    program: dos.x
+    namelist: DOS
+    name: Emax
+    type: float
+    unit: eV
+    required: false
+    default: null
+    category: range
+    ui:
+      label: DOS energy maximum
+      level: advanced
+      widget: number
+
+  - id: qe.dos.DeltaE
+    software: qe
+    program: dos.x
+    namelist: DOS
+    name: DeltaE
+    type: float
+    unit: eV
+    required: false
+    default: null
+    category: resolution
+    ui:
+      label: DOS energy step
+      level: advanced
+      widget: number
+
+  - id: qe.dos.ngauss
+    software: qe
+    program: dos.x
+    namelist: DOS
+    name: ngauss
+    type: integer
+    required: false
+    default: 0
+    category: smearing
+    range:
+      min: -1
+      max: 2
+    ui:
+      label: DOS smearing type
+      level: advanced
+      widget: number
+      help: 0 = simple Gaussian, -1 = Marzari-Vanderbilt cold smearing.
+
+  - id: qe.dos.degauss
+    software: qe
+    program: dos.x
+    namelist: DOS
+    name: degauss
+    type: float
+    unit: eV
+    required: false
+    default: null
+    category: smearing
+    ui:
+      label: DOS smearing width
+      level: advanced
+      widget: number
+
+  # ── projwfc.x (PDOS) ──
+  - id: qe.projwfc.prefix
+    software: qe
+    program: projwfc.x
+    namelist: PROJWFC
+    name: prefix
+    type: string
+    required: true
+    default: null
+    category: identity
+    ui:
+      label: PDOS prefix
+      level: basic
+      widget: text
+
+  - id: qe.projwfc.outdir
+    software: qe
+    program: projwfc.x
+    namelist: PROJWFC
+    name: outdir
+    type: string
+    required: true
+    default: ./out_scf/
+    category: io
+    ui:
+      label: Output directory
+      level: basic
+      widget: text
+
+  - id: qe.projwfc.source_outdir
+    software: qe
+    program: projwfc.x
+    namelist: PROJWFC
+    name: source_outdir
+    type: string
+    required: false
+    category: io
+    ui:
+      label: Source outdir for PDOS (NSCF save)
+      level: advanced
+      widget: text
+      help: "NSCF outdir to read from (default: qe.projwfc.outdir)"
+
+  - id: qe.projwfc.Emin
+    software: qe
+    program: projwfc.x
+    namelist: PROJWFC
+    name: Emin
+    type: float
+    unit: eV
+    required: false
+    default: null
+    category: range
+    ui:
+      label: PDOS energy minimum
+      level: advanced
+      widget: number
+
+  - id: qe.projwfc.Emax
+    software: qe
+    program: projwfc.x
+    namelist: PROJWFC
+    name: Emax
+    type: float
+    unit: eV
+    required: false
+    default: null
+    category: range
+    ui:
+      label: PDOS energy maximum
+      level: advanced
+      widget: number
+
+  - id: qe.projwfc.DeltaE
+    software: qe
+    program: projwfc.x
+    namelist: PROJWFC
+    name: DeltaE
+    type: float
+    unit: eV
+    required: false
+    default: null
+    category: resolution
+    ui:
+      label: PDOS energy step
+      level: advanced
+      widget: number
+
+  - id: qe.projwfc.ngauss
+    software: qe
+    program: projwfc.x
+    namelist: PROJWFC
+    name: ngauss
+    type: integer
+    required: false
+    default: 0
+    category: smearing
+    ui:
+      label: PDOS smearing type
+      level: advanced
+      widget: number
+
+  - id: qe.projwfc.degauss
+    software: qe
+    program: projwfc.x
+    namelist: PROJWFC
+    name: degauss
+    type: float
+    unit: eV
+    required: false
+    default: null
+    category: smearing
+    ui:
+      label: PDOS smearing width
+      level: advanced
+      widget: number
+
+  # ── bands.x ──
+  - id: qe.bands.prefix
+    software: qe
+    program: bands.x
+    namelist: BANDS
+    name: prefix
+    type: string
+    required: true
+    default: null
+    category: identity
+    ui:
+      label: Bands prefix
+      level: basic
+      widget: text
+
+  - id: qe.bands.outdir
+    software: qe
+    program: bands.x
+    namelist: BANDS
+    name: outdir
+    type: string
+    required: true
+    default: ./out_scf/
+    category: io
+    ui:
+      label: Output directory
+      level: basic
+      widget: text
+
+  - id: qe.bands.source_outdir
+    software: qe
+    program: bands.x
+    namelist: BANDS
+    name: source_outdir
+    type: string
+    required: false
+    category: io
+    ui:
+      label: Source SCF outdir for bands
+      level: advanced
+      widget: text
+      help: "SCF outdir containing the .save directory to read from"
+
+  - id: qe.bands.filband
+    software: qe
+    program: bands.x
+    namelist: BANDS
+    name: filband
+    type: string
+    required: false
+    default: null
+    category: io
+    ui:
+      label: Band output file
+      level: basic
+      widget: text
+
+  - id: qe.bands.lsym
+    software: qe
+    program: bands.x
+    namelist: BANDS
+    name: lsym
+    type: boolean
+    required: false
+    default: true
+    category: symmetry
+    ui:
+      label: Use symmetry
+      level: advanced
+      widget: checkbox
+
+  # ── q2r.x (Fourier transform of dynamical matrices) ──
+  - id: qe.q2r.fildyn
+    software: qe
+    program: q2r.x
+    namelist: INPUT
+    name: fildyn
+    type: string
+    required: true
+    default: null
+    category: io
+    ui:
+      label: Dynamical matrix prefix
+      level: basic
+      widget: text
+      help: Prefix for dyn files. q2r.x reads fildyn0, fildyn1, ... fildynN.
+
+  - id: qe.q2r.flfrc
+    software: qe
+    program: q2r.x
+    namelist: INPUT
+    name: flfrc
+    type: string
+    required: true
+    default: null
+    category: io
+    ui:
+      label: Force constant output file
+      level: basic
+      widget: text
+      help: Output file for real-space force constants (.fc).
+
+  - id: qe.q2r.zasr
+    software: qe
+    program: q2r.x
+    namelist: INPUT
+    name: zasr
+    type: string
+    required: false
+    default: crystal
+    category: acustic-sum
+    range:
+      values: [no, simple, crystal, one-dim, zero-dim]
+    ui:
+      label: Acoustic sum rule
+      level: basic
+      widget: select
+      help: Enforce translational invariance. 'crystal' for non-polar, 'simple' for polar.
+
+  # ── matdyn.x (phonon dispersion / DOS) ──
+  - id: qe.matdyn.flfrq
+    software: qe
+    program: matdyn.x
+    namelist: INPUT
+    name: flfrq
+    type: string
+    required: false
+    default: null
+    category: io
+    ui:
+      label: Frequency output file
+      level: basic
+      widget: text
+      help: Output file for phonon frequencies (.freq.gp for dispersion path).
+
+  - id: qe.matdyn.flfrc
+    software: qe
+    program: matdyn.x
+    namelist: INPUT
+    name: flfrc
+    type: string
+    required: true
+    default: null
+    category: io
+    ui:
+      label: Force constant input file
+      level: basic
+      widget: text
+      help: Input real-space force constants from q2r.x (.fc file).
+
+  - id: qe.matdyn.fldyn
+    software: qe
+    program: matdyn.x
+    namelist: INPUT
+    name: fldyn
+    type: string
+    required: false
+    default: null
+    category: io
+    ui:
+      label: Dynamical matrix prefix
+      level: advanced
+      widget: text
+
+  - id: qe.matdyn.dos
+    software: qe
+    program: matdyn.x
+    namelist: INPUT
+    name: dos
+    type: boolean
+    required: false
+    default: false
+    category: job-type
+    ui:
+      label: Calculate phonon DOS
+      level: basic
+      widget: checkbox
+      help: Set to true for uniform-grid phonon DOS (matdyndos.in).
+
+  - id: qe.matdyn.q_in_band_form
+    software: qe
+    program: matdyn.x
+    namelist: INPUT
+    name: q_in_band_form
+    type: boolean
+    required: false
+    default: false
+    category: input
+    ui:
+      label: Band-form q-point input
+      level: advanced
+      widget: checkbox
+      help: True for high-symmetry line segments (phonon dispersion).
+
+  - id: qe.matdyn.q_in_cryst_coord
+    software: qe
+    program: matdyn.x
+    namelist: INPUT
+    name: q_in_cryst_coord
+    type: boolean
+    required: false
+    default: true
+    category: input
+    ui:
+      label: Crystal coordinates for q-points
+      level: advanced
+      widget: checkbox
+
+  - id: qe.matdyn.la2F
+    software: qe
+    program: matdyn.x
+    namelist: INPUT
+    name: la2F
+    type: boolean
+    required: false
+    default: false
+    category: epc
+    ui:
+      label: Calculate α²F (EPC interpolation) — USE WITH CAUTION
+      level: dangerous
+      widget: checkbox
+      help: |
+        DANGEROUS: Only set to true when ALL conditions are met:
+        1. Program is matdyn.x (NOT q2r.x, NOT pw.x)
+        2. Target is el-ph coefficient interpolation (NOT ordinary phonon dispersion/DOS)
+        3. elph_dir/a2Fmatdyn.* files exist from PH stage
+        Default must be false. q2r.x will CRASH if this is true.
+
+  # ── lambda.x (electron-phonon coupling / Tc) ──
+  - id: qe.lambda.mustar
+    software: qe
+    program: lambda.x
+    namelist: INPUT
+    name: mustar
+    type: float
+    required: false
+    default: 0.1
+    category: epc
+    ui:
+      label: Coulomb pseudopotential μ*
+      level: basic
+      widget: number
+      help: Morel-Anderson Coulomb pseudopotential. Typical range 0.10-0.15.
+
+  # ── fs.x (Fermi surface) ──
+  - id: qe.fs.prefix
+    software: qe
+    program: fs.x
+    namelist: FERMI
+    name: prefix
+    type: string
+    required: true
+    default: null
+    category: identity
+    ui:
+      label: FS prefix
+      level: basic
+      widget: text
+
+  - id: qe.fs.outdir
+    software: qe
+    program: fs.x
+    namelist: FERMI
+    name: outdir
+    type: string
+    required: true
+    default: ./out_scf/
+    category: io
+    ui:
+      label: Output directory
+      level: basic
+      widget: text
+
+  - id: qe.fs.deltaE
+    software: qe
+    program: fs.x
+    namelist: FERMI
+    name: deltaE
+    type: float
+    unit: eV
+    required: false
+    default: null
+    category: range
+    ui:
+      label: FS energy window
+      level: advanced
+      widget: number
+      help: Energy window around Fermi level for Fermi surface rendering.

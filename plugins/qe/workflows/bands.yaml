@@ -1,0 +1,44 @@
+id: qe.bands.v1
+software: qe
+description: QE NSCF(bands) → bands.x → bandsx for band structure post-processing.
+stages:
+  - id: nscf_bands
+    program: pw.x
+    depends_on: [scf]
+    description: Non-SCF calculation along high-symmetry k-path for band structure.
+    template: templates/bands/bands.in.j2
+  - id: bands
+    program: bands.x
+    depends_on: [nscf_bands]
+    description: Band structure extraction.
+    template: templates/bands/bandsx.in.j2
+templates:
+  - templates/bands/bands.in.j2
+  - templates/bands/bandsx.in.j2
+parameters:
+  qe.pw.control.calculation: bands
+  qe.bands.filband: bands.dat
+  qe.bands.lsym: true
+uses:
+  - qe.bands.source_outdir
+  - qe.pw.control.prefix
+  - qe.pw.control.calculation
+  - qe.pw.control.outdir
+  - qe.pw.control.pseudo_dir
+  - qe.pw.control.verbosity
+  - qe.pw.system.ibrav
+  - qe.pw.system.nat
+  - qe.pw.system.ntyp
+  - qe.pw.system.ecutwfc
+  - qe.pw.system.ecutrho
+  - qe.pw.system.occupations
+  - qe.pw.system.smearing
+  - qe.pw.system.degauss
+  - qe.pw.system.tot_charge
+  - qe.pw.electrons.conv_thr
+  - qe.pw.electrons.mixing_beta
+  - qe.bands.prefix
+  - qe.bands.outdir
+  - qe.bands.filband
+  - qe.bands.lsym
+  - common.kpoints.grid

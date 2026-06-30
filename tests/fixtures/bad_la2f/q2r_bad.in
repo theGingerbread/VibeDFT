@@ -1,0 +1,6 @@
+&INPUT
+  fildyn = 'test.dyn'
+  flfrc = 'test.fc'
+  zasr = 'crystal'
+  la2F = .true.
+/

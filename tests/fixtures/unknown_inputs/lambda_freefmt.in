@@ -1,0 +1,8 @@
+10  0.12  1    ! emax, degauss, smearing method
+    10         ! Number of q-points
+    0.00000000  0.00000000  0.00000000   1.00
+    0.00000000  0.14433757  0.00000000   6.00
+    0.00000000  0.28867514  0.00000000   6.00
+elph_dir/elph.inp_lambda.1
+elph_dir/elph.inp_lambda.2
+0.1

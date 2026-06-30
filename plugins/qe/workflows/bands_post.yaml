@@ -1,0 +1,24 @@
+id: qe.bands_post.v1
+software: qe
+description: |
+  QE band structure post-processing (bands.x).
+  Reads bands_nscf save. Depends on: qe.bands_nscf.v1.
+  Outputs: bands.dat, bands.dat.gnu.
+stages:
+  - id: bands_post
+    program: bands.x
+    template: templates/bands/bandsx.in.j2
+    description: Band structure extraction (bands.x).
+templates:
+  - templates/bands/bandsx.in.j2
+uses:
+  - qe.bands.source_outdir
+  - qe.pw.control.prefix
+  - qe.pw.control.outdir
+  - qe.bands.prefix
+  - qe.bands.outdir
+  - qe.bands.filband
+  - qe.bands.lsym
+parameters:
+  qe.bands.filband: bands.dat
+  qe.bands.lsym: true

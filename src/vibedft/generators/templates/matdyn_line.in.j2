@@ -1,0 +1,8 @@
+{# matdyn_line.in.j2 — PHONON DISPERSION, la2F NEVER SET #}
+{# la2F belongs in EPC-related matdyn only, not ordinary dispersion. #}
+&INPUT
+  asr = 'simple'
+  flfrc = '{{ stage_prefix }}.fc'
+  flfrq = '{{ stage_prefix }}.freq.gp'
+  q_in_band_form = .true.
+/

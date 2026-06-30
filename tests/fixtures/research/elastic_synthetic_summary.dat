@@ -1,0 +1,5 @@
+C11_N_per_m: 120.000000
+C12_N_per_m: 28.000000
+C66_N_per_m: 46.000000
+source: synthetic_schema_fixture
+strain_points: 0

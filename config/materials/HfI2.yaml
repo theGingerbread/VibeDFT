@@ -1,0 +1,20 @@
+id: HfI2
+formula: HfI2
+family: HfX2
+pseudo_dir: <PSEUDO_DIR>  # Customize for your cluster
+notes: "HfI2 doping reference; intercalation Li_2 best structure."
+atomic_species:
+  Hf: {mass: 178.49, pseudo: Hf.pbe-spn-rrkjus_psl.1.0.0.UPF}
+  I: {mass: 126.90447, pseudo: I.pbe-n-rrkjus_psl.1.0.0.UPF}
+cell_parameters:
+  - [3.890000000, -0.000000000, 0.000000000]
+  - [-1.945000000, 3.368000000, 0.000000000]
+  - [0.000000000, 0.000000000, 40.000000000]
+atomic_positions:
+  - {element: Hf, pos: [-0.0000000000, -0.0000000000, 0.5000000000]}
+  - {element: I, pos: [0.6666666670, 0.3333333330, 0.5461764050]}
+  - {element: I, pos: [0.6666666670, 0.3333333330, 0.4538235950]}
+parameters:
+  qe.pw.control.prefix: HfI2
+  qe.pw.system.ecutwfc: 100
+  qe.pw.system.ecutrho: 700

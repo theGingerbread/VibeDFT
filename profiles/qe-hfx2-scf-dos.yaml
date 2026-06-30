@@ -1,0 +1,7 @@
+id: qe-hfx2-scf-dos
+description: Initial HfX2 QE SCF/DOS profile for testing the parameter overlay model.
+software: qe
+parameters:
+  qe.pw.system.ecutwfc: 80
+  qe.pw.system.ecutrho: 640
+  common.kpoints.grid: [18, 18, 1]

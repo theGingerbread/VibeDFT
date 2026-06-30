@@ -1,0 +1,20 @@
+id: HfCl2
+formula: HfCl2
+family: HfX2
+pseudo_dir: <PSEUDO_DIR>  # Customize for your cluster
+notes: "Cell parameters from RX structure optimization. Intercalation requires vdw-DF3-opt1 + assume_isolated='2D' + cell_dofree='2Dxy'."
+atomic_species:
+  Hf: {mass: 178.49, pseudo: Hf.pbe-spn-rrkjus_psl.1.0.0.UPF}
+  Cl: {mass: 35.453, pseudo: Cl.pbe-n-rrkjus_psl.1.0.0.UPF}
+cell_parameters:
+  - [3.460000000, -0.000000000, 0.000000000]
+  - [-1.730000000, 2.996000000, 0.000000000]
+  - [0.000000000, 0.000000000, 40.000000000]
+atomic_positions:
+  - {element: Hf, pos: [-0.0000000000, -0.0000000000, 0.5000000000]}
+  - {element: Cl, pos: [0.6666666670, 0.3333333330, 0.5461764050]}
+  - {element: Cl, pos: [0.6666666670, 0.3333333330, 0.4538235950]}
+parameters:
+  qe.pw.control.prefix: HfCl2
+  qe.pw.system.ecutwfc: 60
+  qe.pw.system.ecutrho: 480

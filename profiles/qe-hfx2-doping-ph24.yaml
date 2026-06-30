@@ -1,0 +1,12 @@
+id: qe-hfx2-doping-ph24
+description: HfX2 doping route — PH 24×24×1 dense k-grid for lambda.x (quick test, 8x multiple)
+software: qe
+route: doping
+parameters:
+  qe.pw.system.ecutwfc: 70
+  qe.pw.system.ecutrho: 560
+  common.kpoints.grid: [24, 24, 1]
+  qe.ph.nq1: 8
+  qe.ph.nq2: 8
+  qe.ph.nq3: 1
+  qe.ph.electron_phonon: dvscf

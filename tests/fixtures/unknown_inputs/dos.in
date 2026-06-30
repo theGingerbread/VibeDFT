@@ -1,0 +1,8 @@
+&dos
+  prefix   = 'test'
+  outdir   = './out_scf/'
+  fildos   = 'test.dos'
+  Emin     = -10.0
+  Emax     =  10.0
+  DeltaE   =  0.01
+/

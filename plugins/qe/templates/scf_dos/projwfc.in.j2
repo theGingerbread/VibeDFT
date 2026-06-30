@@ -1,0 +1,13 @@
+&PROJWFC
+  prefix = '{{ qe.pw.control.prefix }}'
+  outdir = '{{ qe.projwfc.source_outdir | default(qe.projwfc.outdir) | default(qe.pw.control.outdir) }}'
+{% if qe.projwfc.DeltaE %}
+  DeltaE = {{ qe.projwfc.DeltaE }}
+{% endif %}
+{% if qe.projwfc.ngauss is defined and qe.projwfc.ngauss is not none %}
+  ngauss = {{ qe.projwfc.ngauss }}
+{% endif %}
+{% if qe.projwfc.degauss is defined and qe.projwfc.degauss is not none %}
+  degauss = {{ qe.projwfc.degauss }}
+{% endif %}
+/

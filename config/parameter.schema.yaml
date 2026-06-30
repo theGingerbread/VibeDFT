@@ -1,0 +1,9 @@
+id: vibedft.parameter.v1
+description: Minimal parameter schema seed. Formal validation will be added after the registry MVP.
+required_fields:
+  - id
+  - software
+  - name
+  - type
+  - required
+  - ui

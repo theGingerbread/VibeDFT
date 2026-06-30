@@ -1,0 +1,18 @@
+&CONTROL calculation='scf' prefix='test_soc' outdir='./out_soc/' pseudo_dir='/pseudo/' /
+&SYSTEM ibrav=0 nat=3 ntyp=2 ecutwfc=60 ecutrho=480
+  occupations='smearing' degauss=0.005
+  noncolin=.true. lspinorb=.true.
+/
+&ELECTRONS conv_thr=1.0d-12 /
+ATOMIC_SPECIES
+  Hf 178.49 Hf.UPF
+  I  126.90 I.UPF
+ATOMIC_POSITIONS crystal
+  Hf 0.0 0.0 0.5
+  I  0.667 0.333 0.565
+  I  0.667 0.333 0.435
+K_POINTS automatic 12 12 1 0 0 0
+CELL_PARAMETERS angstrom
+  3.89 0.00 0.00
+  -1.945 3.368 0.00
+  0.00 0.00 40.00

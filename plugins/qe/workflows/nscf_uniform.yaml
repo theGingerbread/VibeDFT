@@ -1,0 +1,41 @@
+id: qe.nscf_uniform.v1
+software: qe
+description: |
+  QE non-self-consistent field calculation on a uniform k-mesh.
+  Used as input for dos.x, projwfc.x, and el-ph calculations.
+  Depends on: qe.scf.v1.
+
+  PRE-STAGE (required before running NSCF):
+    mkdir -p out_nscf
+    cp -r ../02_scf/out_scf/${PREFIX}.save ./out_nscf/
+  or symlink:
+    ln -s ../../02_scf/out_scf/${PREFIX}.save ./out_nscf/${PREFIX}.save
+  QE does not auto-read from upstream outdir; the .save must be staged.
+stages:
+  - id: nscf
+    program: pw.x
+    template: templates/scf_dos/nscf_uniform.in.j2
+    description: Non-SCF on uniform k-grid (e.g. for DOS, PDOS, elph).
+templates:
+  - templates/scf_dos/nscf_uniform.in.j2
+uses:
+  - qe.pw.control.prefix
+  - qe.pw.control.calculation
+  - qe.pw.control.outdir
+  - qe.pw.control.pseudo_dir
+  - qe.pw.control.verbosity
+  - qe.pw.system.ibrav
+  - qe.pw.system.nat
+  - qe.pw.system.ntyp
+  - qe.pw.system.ecutwfc
+  - qe.pw.system.ecutrho
+  - qe.pw.system.occupations
+  - qe.pw.system.smearing
+  - qe.pw.system.degauss
+  - qe.pw.system.tot_charge
+  - qe.pw.electrons.conv_thr
+  - qe.pw.electrons.mixing_beta
+  - common.kpoints.grid
+parameters:
+  qe.pw.control.calculation: nscf
+  common.kpoints.grid: [24, 24, 1]

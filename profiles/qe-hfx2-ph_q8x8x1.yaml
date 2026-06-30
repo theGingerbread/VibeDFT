@@ -1,0 +1,13 @@
+id: qe-hfx2-ph_q8x8x1
+description: HfX2 PH base — q=8×8×1 grid, pwx coarse k=16×16×1 (standard HfX2 10-irreducible-q split)
+software: qe
+route: doping
+parameters:
+  qe.pw.system.ecutwfc: 70
+  qe.pw.system.ecutrho: 560
+  common.kpoints.grid: [16, 16, 1]
+  qe.ph.ldisp: true
+  qe.ph.nq1: 8
+  qe.ph.nq2: 8
+  qe.ph.nq3: 1
+  qe.ph.electron_phonon: dvscf

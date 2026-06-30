@@ -1,0 +1,35 @@
+&CONTROL
+  calculation = 'bands'
+  prefix = 'test'
+  outdir = './tmp'
+  pseudo_dir = './pseudo'
+/
+&SYSTEM
+  ibrav = 0
+  nat = 1
+  ntyp = 1
+  ecutwfc = 90
+  ecutrho = 720
+  occupations = 'smearing'
+  smearing = 'mv'
+  degauss = 5.0d-3
+  nbnd = 40
+  assume_isolated = '2D'
+/
+&ELECTRONS
+  conv_thr = 1.0d-10
+/
+ATOMIC_SPECIES
+Hf  178.49  Hf.upf
+CELL_PARAMETERS angstrom
+   3.3  0.0  0.0
+  -1.65 2.86 0.0
+   0.0  0.0  30.0
+ATOMIC_POSITIONS crystal
+Hf  0.0  0.0  0.5
+K_POINTS crystal_b
+40
+0.0  0.0  0.0  40
+0.5  0.0  0.0  40
+0.3333 0.3333 0.0  40
+0.0  0.0  0.0  1

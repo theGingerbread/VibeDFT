@@ -1,0 +1,1557 @@
+stages:
+- stage_name: Structure Definition
+  stage_id: 00_structure
+  stage_type: preparation
+  physics_question: What is the crystallographic geometry of the 2D material, and
+    is the vacuum layer sufficient?
+  description: 'Accept raw structure (CIF, XYZ, POSCAR) and produce a QE-compatible
+    input geometry with explicit vacuum layer for 2D materials. No electronic calculation
+    is performed at this stage.
+
+    '
+  upstream_dependencies: []
+  downstream_stages:
+  - 01_pseudopotentials
+  required_qe_executables: []
+  optional_qe_executables: []
+  expected_inputs:
+  - name: structure.cif
+    description: Input crystal structure (CIF, XYZ, or POSCAR)
+    required: true
+  - name: vacuum_config.yaml
+    description: Vacuum layer configuration (thickness, direction)
+    required: false
+  expected_outputs:
+  - name: structure.qe.in
+    description: QE-compatible ATOMIC_POSITIONS + CELL_PARAMETERS block
+    required: true
+  - name: structure_summary.yaml
+    description: Lattice parameters, atomic positions, vacuum thickness
+    required: true
+  validation_rules:
+  - name: lattice_consistency
+    description: Check lattice parameters are physically reasonable for claimed phase
+  - name: vacuum_thickness
+    description: Verify vacuum layer ≥ 20 Å in the non-periodic direction
+  - name: stoichiometry_check
+    description: Verify atom counts match expected stoichiometry
+  metadata:
+    estimated_runtime: < 1 second
+    parallelization: N/A
+    produces_charge_density: false
+- stage_name: Pseudopotential Selection
+  stage_id: 01_pseudopotentials
+  stage_type: preparation
+  physics_question: Are the selected pseudopotentials appropriate for the target material
+    and properties?
+  description: 'Select and validate pseudopotentials for each element in the structure.
+    For 2D materials with heavy elements (e.g., Hf, transition metals), verify that
+    semi-core states are included when needed for phonon/EPC accuracy.
+
+    '
+  upstream_dependencies:
+  - 00_structure
+  downstream_stages:
+  - 02_preconv
+  required_qe_executables: []
+  optional_qe_executables: []
+  expected_inputs:
+  - name: element_list.yaml
+    description: List of elements from 00_structure
+    required: true
+  - name: pseudopotential_library_path
+    description: Path to pseudopotential library (PSlibrary, SSSP, etc.)
+    required: true
+  expected_outputs:
+  - name: pseudopotential_manifest.yaml
+    description: Selected pseudopotentials per element with rationale
+    required: true
+  - name: pseudo_warnings.yaml
+    description: 'Warnings: missing semi-core, known soft pseudo issues'
+    required: false
+  validation_rules:
+  - name: semi_core_check
+    description: Verify semi-core states are included for phonon-sensitive elements
+  - name: library_consistency
+    description: Ensure all pseudopotentials come from the same library/reference
+  - name: valence_configuration
+    description: Check valence electron count against expected chemistry
+  metadata:
+    estimated_runtime: < 1 second
+    parallelization: N/A
+    produces_charge_density: false
+- stage_name: Pre-Convergence Testing
+  stage_id: 02_preconv
+  stage_type: convergence
+  physics_question: What are the coarse bounds for ecutwfc and k-mesh before full
+    convergence testing?
+  description: 'Run coarse parameter sweeps to establish safe starting values for
+    the full convergence study. Uses low k-mesh and default mixing to quickly bound
+    ecutwfc and ecutrho. Outputs are NOT used for production — only to inform the
+    convergence matrix in 04_conv.
+
+    '
+  upstream_dependencies:
+  - 01_pseudopotentials
+  downstream_stages:
+  - 03_relax
+  required_qe_executables:
+  - pw.x
+  expected_inputs:
+  - name: preconv_config.yaml
+    description: Coarse sweep ranges for ecutwfc, ecutrho
+    required: true
+  expected_outputs:
+  - name: preconv_summary.yaml
+    description: Recommended starting ecutwfc, ecutrho for convergence testing
+    required: true
+  - name: preconv_raw.csv
+    description: Raw energy-vs-ecut data points
+    required: false
+  validation_rules:
+  - name: ecut_bounds_check
+    description: Verify ecutwfc range covers plateau onset
+  - name: pseudopotential_compatibility
+    description: Check ecutrho/ecutwfc ratio matches pseudopotential type (USPP ≥
+      8, NC ≥ 4)
+  metadata:
+    estimated_runtime: ~5–15 min on 28 cores
+    parallelization: MPI over k-points
+    produces_charge_density: false
+- stage_name: Initial Relaxation
+  stage_id: 03_relax
+  stage_type: relaxation
+  physics_question: What is the relaxed geometry at a coarse but reasonable parameter
+    set?
+  description: 'Perform initial vc-relax with coarse parameters to obtain a reasonable
+    starting geometry for the full convergence study. The relaxed structure from this
+    stage feeds into 04_conv for parameter convergence testing, NOT into production
+    calculations.
+
+    Critical for 2D materials: must use cell_dofree=''2Dxy'' to keep vacuum layer
+    fixed during relaxation.
+
+    '
+  upstream_dependencies:
+  - 02_preconv
+  downstream_stages:
+  - 04_conv
+  required_qe_executables:
+  - pw.x
+  expected_inputs:
+  - name: relax_coarse.in
+    description: vc-relax input with coarse ecut/k-mesh from 02_preconv
+    required: true
+  expected_outputs:
+  - name: relax_coarse.out
+    description: QE output with final energy, forces, stress
+    required: true
+  - name: relaxed_structure.in
+    description: Extracted CELL_PARAMETERS + ATOMIC_POSITIONS from relaxation
+    required: true
+  validation_rules:
+  - name: bfgs_convergence
+    description: Verify BFGS converged within max steps
+  - name: force_threshold
+    description: Final forces < forc_conv_thr
+  - name: cell_dofree_2d
+    description: For 2D materials, verify cell_dofree='2Dxy' was used
+  - name: vacuum_preserved
+    description: Verify c-axis (vacuum) did not collapse during relaxation
+  metadata:
+    estimated_runtime: ~30 min–2 hr on 28 cores
+    parallelization: MPI over k-points
+    produces_charge_density: false
+- stage_name: Full Convergence Testing
+  stage_id: 04_conv
+  stage_type: convergence
+  physics_question: What parameter set yields total energy converged to < 1 mRy/atom?
+  description: 'Systematic convergence testing across multiple dimensions: ecutwfc,
+    k-mesh, vacuum thickness, and smearing width. Uses the relaxed structure from
+    03_relax as the fixed geometry.
+
+    Output is a converged parameter set that feeds into 05_final_relax and all subsequent
+    production calculations.
+
+    This stage answers ONLY the convergence question — it does NOT produce production-quality
+    results.
+
+    '
+  upstream_dependencies:
+  - 03_relax
+  downstream_stages:
+  - 05_final_relax
+  required_qe_executables:
+  - pw.x
+  expected_inputs:
+  - name: convergence_matrix.yaml
+    description: Parameter sweep definitions (ecut list, k-mesh list, vacuum list,
+      smearing list)
+    required: true
+  expected_outputs:
+  - name: convergence_report.yaml
+    description: Converged parameters with convergence curves and thresholds
+    required: true
+  - name: convergence_plots/
+    description: Energy vs ecut, energy vs k-mesh, energy vs vacuum plots
+    required: false
+  validation_rules:
+  - name: ecut_convergence
+    description: ΔE < 1 mRy/atom between successive ecut values
+  - name: kmesh_convergence
+    description: ΔE < 1 mRy/atom between successive k-mesh densities
+  - name: vacuum_convergence
+    description: ΔE < 1 mRy/atom between successive vacuum thicknesses
+  - name: smearing_convergence
+    description: Total energy stable across smearing range for metals
+  metadata:
+    estimated_runtime: ~2–8 hr on 28 cores (parallel sweeps)
+    parallelization: MPI over k-points; sweeps can be embarrassingly parallel
+    produces_charge_density: false
+- stage_name: Final Relaxation
+  stage_id: 05_final_relax
+  stage_type: relaxation
+  physics_question: What is the fully converged equilibrium geometry of the 2D material?
+  description: 'Perform final vc-relax using the CONVERGED parameters from 04_conv.
+    This produces the production-quality relaxed geometry used by all downstream electronic,
+    phonon, and property calculations.
+
+    PH_STABILITY and EPC stages MUST use this geometry as input. This stage must NOT
+    be skipped or replaced by 03_relax results.
+
+    '
+  upstream_dependencies:
+  - 04_conv
+  downstream_stages:
+  - 06_scf
+  - 16_elastic
+  - 17_aimd
+  - 18_exfoliation
+  required_qe_executables:
+  - pw.x
+  expected_inputs:
+  - name: relax_final.in
+    description: vc-relax input with converged ecut/k-mesh from 04_conv
+    required: true
+  expected_outputs:
+  - name: relax_final.out
+    description: Full QE vc-relax output
+    required: true
+  - name: final_structure.in
+    description: Extracted CELL_PARAMETERS + ATOMIC_POSITIONS — THE canonical geometry
+    required: true
+  - name: final_structure.cif
+    description: CIF export for interoperability
+    required: false
+  validation_rules:
+  - name: bfgs_convergence
+    description: BFGS converged in < 100 steps
+  - name: force_convergence
+    description: Final forces < 1e-4 Ry/Bohr
+  - name: stress_convergence
+    description: Final stress < 0.5 kbar for 2D materials
+  - name: cell_dofree_2d
+    description: Verify cell_dofree='2Dxy' preserved for 2D materials
+  - name: vacuum_unchanged
+    description: c-axis unchanged to within 0.1 Å
+  metadata:
+    estimated_runtime: ~1–4 hr on 28 cores
+    parallelization: MPI over k-points
+    produces_charge_density: false
+- stage_name: Self-Consistent Field
+  stage_id: 06_scf
+  stage_type: electronic_structure
+  physics_question: What is the self-consistent charge density and ground-state electronic
+    energy?
+  description: 'Perform a high-precision SCF calculation using the converged geometry
+    from 05_final_relax and converged parameters from 04_conv.
+
+    This stage produces the charge density that ALL downstream electronic and vibrational
+    calculations depend on. It is the single most critical chokepoint in the workflow
+    — any error here propagates everywhere.
+
+    Must use tight convergence: conv_thr ≥ 1e-10 for phonon/EPC chains.
+
+    '
+  upstream_dependencies:
+  - 05_final_relax
+  downstream_stages:
+  - 07_bands
+  - 08_dos
+  - 12_ph_stability
+  - 19_optical
+  required_qe_executables:
+  - pw.x
+  expected_inputs:
+  - name: scf.in
+    description: SCF input with final structure + converged parameters
+    required: true
+  expected_outputs:
+  - name: scf.out
+    description: Full QE SCF output
+    required: true
+  - name: charge_density/
+    description: QE outdir with saved charge density (required by NSCF, PH, bands)
+    required: true
+  - name: scf_summary.yaml
+    description: Total energy, Fermi energy, convergence metrics
+    required: true
+  validation_rules:
+  - name: scf_convergence
+    description: SCF converged within electron_maxstep
+  - name: total_energy_consistency
+    description: 'Compare with 04_conv last SCF: ΔE < 0.1 mRy'
+  - name: band_gap_sanity
+    description: Rough band gap consistent with material type (metal vs semiconductor)
+  metadata:
+    estimated_runtime: ~15–45 min on 28 cores
+    parallelization: MPI over k-points
+    produces_charge_density: true
+- stage_name: Band Structure
+  stage_id: 07_bands
+  stage_type: electronic_structure
+  physics_question: What is the electronic band structure along high-symmetry k-paths?
+  description: 'Calculate the electronic band structure along standardized high-symmetry
+    paths for 2D hexagonal/rectangular lattices.
+
+    Uses the SCF charge density from 06_scf — does NOT perform a new SCF. This is
+    a bands (NSCF-along-path) calculation only.
+
+    '
+  upstream_dependencies:
+  - 06_scf
+  downstream_stages: []
+  required_qe_executables:
+  - pw.x
+  - bands.x
+  expected_inputs:
+  - name: bands.in
+    description: bands calculation input with k-path definition
+    required: true
+  - name: bandspp.in
+    description: bands.x post-processing input
+    required: true
+  expected_outputs:
+  - name: bands.out
+    description: bands calculation output
+    required: true
+  - name: bandspp.out
+    description: bands.x post-processed output
+    required: true
+  - name: band_structure.dat
+    description: Plottable band structure data
+    required: true
+  - name: band_structure.png
+    description: Band structure plot with Fermi level reference
+    required: false
+  validation_rules:
+  - name: kpath_completeness
+    description: Verify k-path covers Γ-M-K-Γ for hexagonal, Γ-X-M-Γ for rectangular
+  - name: nbands_sufficiency
+    description: Check that nbnd covers at least E_F ± 10 eV
+  - name: scf_charge_density_found
+    description: Verify SCF charge density is accessible from bands outdir
+  metadata:
+    estimated_runtime: ~5–15 min on 28 cores
+    parallelization: MPI over k-points along path
+    produces_charge_density: false
+- stage_name: Density of States
+  stage_id: 08_dos
+  stage_type: electronic_structure
+  physics_question: What is the electronic density of states, including orbital projections
+    (PDOS)?
+  description: 'Calculate total DOS and atom/orbital-projected PDOS on a dense k-mesh.
+
+    Requires an NSCF calculation on a fine k-grid (≥ 36×36×1 for 2D), followed by
+    dos.x and projwfc.x post-processing.
+
+    The NSCF step uses the SCF charge density from 06_scf.
+
+    '
+  upstream_dependencies:
+  - 06_scf
+  downstream_stages:
+  - 09_charge
+  - 10_workfunction
+  - 11_bader
+  required_qe_executables:
+  - pw.x
+  - dos.x
+  - projwfc.x
+  expected_inputs:
+  - name: nscf.in
+    description: NSCF input with dense k-mesh (≥ 36×36×1)
+    required: true
+  - name: dos.in
+    description: dos.x input with energy window
+    required: true
+  - name: pdos.in
+    description: projwfc.x input for orbital projection
+    required: true
+  expected_outputs:
+  - name: nscf.out
+    description: NSCF calculation output
+    required: true
+  - name: dos.out
+    description: Total DOS data
+    required: true
+  - name: pdos.out
+    description: Projected DOS per atom/orbital
+    required: true
+  - name: dos_plot.png
+    description: Total DOS plot with Fermi reference
+    required: false
+  - name: pdos_plot.png
+    description: Orbital-projected DOS plot
+    required: false
+  validation_rules:
+  - name: kmesh_density
+    description: NSCF k-mesh ≥ 36×36×1 for 2D DOS convergence
+  - name: nbnd_sufficiency
+    description: nbnd covers E_F ± 10 eV energy window
+  - name: dos_normalization
+    description: Integrated DOS matches expected electron count
+  - name: fermi_alignment
+    description: E_F = 0 in output data; verify against SCF Fermi energy
+  metadata:
+    estimated_runtime: ~20–40 min on 28 cores
+    parallelization: MPI over dense k-mesh
+    produces_charge_density: false
+- stage_name: Charge Density Analysis
+  stage_id: 09_charge
+  stage_type: charge_analysis
+  physics_question: What is the spatial distribution of electronic charge in the material?
+  description: 'Analyze the real-space charge density distribution. Identify bonding
+    character, charge transfer between species, and interlayer vs intralayer charge
+    distribution for 2D materials.
+
+    Purely post-processing on the SCF charge density from 06_scf. No new QE calculation.
+
+    '
+  upstream_dependencies:
+  - 08_dos
+  downstream_stages: []
+  required_qe_executables:
+  - pp.x
+  expected_inputs:
+  - name: charge_config.yaml
+    description: Analysis configuration (planes, ranges, formats)
+    required: true
+  expected_outputs:
+  - name: charge_density_2d.dat
+    description: Planar-averaged charge density along z
+    required: true
+  - name: charge_difference_plot.png
+    description: Charge density difference map
+    required: false
+  - name: charge_summary.yaml
+    description: Charge transfer estimates, bonding character classification
+    required: true
+  validation_rules:
+  - name: charge_conservation
+    description: Integrated charge matches total electron count
+  - name: vacuum_decay
+    description: Charge density decays to ~0 in vacuum region
+  metadata:
+    estimated_runtime: < 1 min
+    parallelization: Serial
+    produces_charge_density: false
+- stage_name: Work Function
+  stage_id: 10_workfunction
+  stage_type: charge_analysis
+  physics_question: What is the electrostatic work function of the 2D material?
+  description: 'Calculate the work function from the planar-averaged electrostatic
+    potential along the vacuum direction. For 2D materials, this determines the energy
+    required to extract an electron from the surface.
+
+    Uses the SCF charge density from 06_scf. Purely post-processing.
+
+    Note: Work function analysis is SEPARATE from charge density analysis (09_charge).
+    They answer different physical questions and must not be merged.
+
+    '
+  upstream_dependencies:
+  - 08_dos
+  downstream_stages: []
+  required_qe_executables:
+  - pp.x
+  expected_inputs:
+  - name: wf_config.yaml
+    description: Work function calculation parameters (axis, output format)
+    required: true
+  expected_outputs:
+  - name: planar_potential.dat
+    description: Planar-averaged electrostatic potential along vacuum axis
+    required: true
+  - name: work_function.yaml
+    description: Calculated work function value (eV), vacuum level, Fermi level
+    required: true
+  validation_rules:
+  - name: vacuum_plateau
+    description: Potential plateaus in vacuum region — verify asymptotic behavior
+  - name: dipole_correction
+    description: For asymmetric 2D slabs, verify dipole correction applied or assess
+      error
+  - name: reference_consistency
+    description: Fermi energy consistent with 06_scf output
+  metadata:
+    estimated_runtime: < 1 min
+    parallelization: Serial
+    produces_charge_density: false
+- stage_name: Bader Charge Analysis
+  stage_id: 11_bader
+  stage_type: charge_analysis
+  physics_question: What is the Bader (QTAIM) charge partitioning for each atom?
+  description: 'Perform Bader charge analysis on the SCF charge density from 06_scf.
+    Determines charge transfer between atomic species, oxidation states, and ionicity/covalency
+    character.
+
+    Requires external Bader analysis tool (Henkelman group). This is NOT a QE-native
+    analysis but is essential for chemical understanding.
+
+    Bader analysis is SEPARATE from charge density visualization (09_charge). Bader
+    answers "how many electrons on each atom?" while 09_charge answers "where is the
+    charge distributed in space?"
+
+    '
+  upstream_dependencies:
+  - 08_dos
+  downstream_stages: []
+  required_qe_executables:
+  - pp.x
+  external_tools:
+  - bader
+  expected_inputs:
+  - name: bader_config.yaml
+    description: Bader analysis parameters
+    required: true
+  expected_outputs:
+  - name: ACF.dat
+    description: Bader atomic charge file
+    required: true
+  - name: BCF.dat
+    description: Bader bond critical point file
+    required: true
+  - name: bader_summary.yaml
+    description: Per-atom charges, total charge transfer, oxidation state assignments
+    required: true
+  validation_rules:
+  - name: charge_conservation
+    description: Sum of Bader charges ≈ total electron count
+  - name: oxidation_state_reasonableness
+    description: Assigned oxidation states match expected chemistry
+  - name: grid_sufficiency
+    description: Charge density grid fine enough for Bader integration
+  metadata:
+    estimated_runtime: ~1–5 min
+    parallelization: Serial (bader) + MPI (pp.x)
+    produces_charge_density: false
+- stage_name: Phonon Stability
+  stage_id: 12_ph_stability
+  stage_type: vibrational
+  physics_question: Is the 2D material dynamically stable (no imaginary phonon frequencies)?
+  description: 'Calculate the phonon dispersion on a coarse q-mesh to verify dynamical
+    stability. The presence of imaginary (negative) phonon frequencies indicates structural
+    instability or an incorrect ground state.
+
+    CRITICAL BOUNDARY: This stage answers ONLY the stability question. It does NOT
+    calculate electron-phonon coupling. PH_STABILITY ≠ PH_EPC. These are STAGE-SEPARATED
+    by design.
+
+    Uses a coarse q-mesh (e.g., 4×4×1 or 6×6×1) sufficient for stability assessment
+    without the computational cost of EPC-grade resolution.
+
+    '
+  upstream_dependencies:
+  - 06_scf
+  downstream_stages:
+  - 13_q2r_matdyn
+  required_qe_executables:
+  - ph.x
+  expected_inputs:
+  - name: ph_stability.in
+    description: ph.x input for phonon dispersion on coarse q-mesh
+    required: true
+  expected_outputs:
+  - name: ph_stability.out
+    description: ph.x output
+    required: true
+  - name: dynmat_files/
+    description: Dynamical matrices on q-grid
+    required: true
+  - name: phonon_dispersion.dat
+    description: Phonon frequencies along high-symmetry path
+    required: true
+  - name: stability_verdict.yaml
+    description: Stable/Unstable verdict, max imaginary frequency, soft mode locations
+    required: true
+  validation_rules:
+  - name: no_imaginary_frequencies
+    description: All phonon frequencies ω² ≥ 0 at all q-points (within numerical noise
+      ~1 cm⁻¹)
+  - name: acoustic_sum_rule
+    description: Three acoustic modes at Γ have ω = 0
+  - name: qmesh_symmetry
+    description: q-mesh respects crystal symmetry
+  - name: asr_applied
+    description: Acoustic sum rule correction applied (asr='simple' or 'crystal')
+  metadata:
+    estimated_runtime: ~1–4 hr on 28 cores (coarse q-mesh)
+    parallelization: MPI over q-points (image parallelization)
+    produces_charge_density: false
+- stage_name: Interatomic Force Constants
+  stage_id: 13_q2r_matdyn
+  stage_type: vibrational
+  physics_question: What are the real-space interatomic force constants (IFCs) from
+    the dynamical matrices?
+  description: 'Fourier-transform dynamical matrices from reciprocal space (q-grid)
+    to real space using q2r.x, then interpolate phonon frequencies to arbitrary q-points
+    using matdyn.x.
+
+    This is a PURELY MATHEMATICAL post-processing stage. No new physics calculation.
+    It converts the ph.x output into a form usable for: - Fine phonon dispersion plots
+    - Phonon density of states - Electron-phonon coupling (14_epc)
+
+    IMPORTANT: q2r.x must NOT attempt to compute la2F. la2F is EPC territory (14_epc).
+    The validator must reject any q2r input containing la2F = .true.
+
+    '
+  upstream_dependencies:
+  - 12_ph_stability
+  downstream_stages:
+  - 14_epc
+  required_qe_executables:
+  - q2r.x
+  - matdyn.x
+  expected_inputs:
+  - name: q2r.in
+    description: q2r.x input (NO la2F flag)
+    required: true
+  - name: matdyn.in
+    description: matdyn.x input for phonon dispersion interpolation
+    required: true
+  expected_outputs:
+  - name: q2r.out
+    description: q2r.x output
+    required: true
+  - name: matdyn.out
+    description: matdyn.x output with interpolated phonon frequencies
+    required: true
+  - name: force_constants.dat
+    description: Real-space IFC file (.fc)
+    required: true
+  - name: phonon_dispersion_fine.dat
+    description: Fully interpolated phonon dispersion
+    required: true
+  - name: phonon_dos.dat
+    description: Phonon density of states (if requested)
+    required: false
+  validation_rules:
+  - name: la2F_forbidden
+    description: la2F must NOT be present in q2r.in — this is an EPC concern
+  - name: fc_file_exists
+    description: Force constant file (.fc) produced and non-empty
+  - name: fourier_quality
+    description: Interpolated phonons match original q-grid frequencies within tolerance
+  - name: asr_preserved
+    description: Acoustic sum rule preserved after Fourier transform
+  metadata:
+    estimated_runtime: < 1 min
+    parallelization: Serial (q2r.x), Serial/OpenMP (matdyn.x)
+    produces_charge_density: false
+- stage_name: Electron-Phonon Coupling
+  stage_id: 14_epc
+  stage_type: superconductivity
+  physics_question: What is the electron-phonon coupling strength (lambda) and the
+    Eliashberg spectral function (a2F)?
+  upstream_dependencies:
+  - 06_scf
+  downstream_dependencies:
+  - 15_tc
+  required_inputs:
+  - ph_epc.in
+  - matdyn_epc.in
+  produced_outputs:
+  - ph_epc.out
+  - matdyn_epc.out
+  - lambda.dat
+  - a2F.dat
+  - elph_dir/
+  qe_programs:
+  - ph.x
+  - matdyn.x
+  validation_targets:
+  - electron_phonon_mode_valid
+  - lambda_positive
+  - a2F_positive
+  - qmesh_finer_than_stability
+  - sigma_metadata_present
+  _readme: '# 14_epc — Electron-Phonon Coupling
+
+
+    **Stage Type**: `superconductivity`
+
+
+    ---
+
+
+    ## 1. Physics Question
+
+
+    What is the electron-phonon coupling strength (lambda) and the Eliashberg spectral
+    function (a2F)?
+
+
+    ## 2. Upstream Dependencies
+
+
+    06_scf (dedicated dense SCF for EPC, separate from stability SCF)
+
+
+    ## 3. Downstream Dependencies
+
+
+    15_tc
+
+
+    ## 4. Required QE Programs
+
+
+    ph.x, matdyn.x
+
+
+    ## 5. Expected Outputs
+
+
+    - `ph_epc.out`
+
+    - `matdyn_epc.out`
+
+    - `lambda.dat`
+
+    - `a2F.dat`
+
+    - `elph_dir/`
+
+
+    ## 6. Success Criteria
+
+
+    - [x] electron_phonon explicitly set with valid mode (simple, interpolated, lambda_tetra)
+
+    - [x] Lambda > 0 and physically reasonable for material type
+
+    - [x] a2F(omega) positive and integrates to lambda
+
+    - [x] Dense q-mesh used (finer than stability q-mesh)
+
+    - [x] el_ph_sigma convergence sweep recorded or defaults documented
+
+
+    ## 7. Failure Criteria
+
+
+    - [ ] electron_phonon missing or set to unsupported mode for QE version
+
+    - [ ] Lambda <= 0 or a2F contains negative values
+
+    - [ ] Same q-mesh as stability run (EPC requires denser sampling)
+
+    - [ ] Missing el_ph_sigma / el_ph_nsigma metadata (convergence unverifiable)
+
+
+    ## Description
+
+
+    Fine q-mesh ph.x calculation WITH electron_phonon coupling enabled.
+
+
+    CRITICAL BOUNDARY: EPC != PH_STABILITY. Different q-mesh, different purpose.
+
+
+    matdyn.x with la2F=.true. interpolates el-ph coefficients.
+
+
+    Produces lambda, a2F(omega), and el-ph coupling matrices.
+
+
+    Dense k-grid SCF (separate from 06_scf) may be needed for EPC q-mesh.
+
+
+
+    ## 2D Materials Considerations
+
+
+    2D: q-mesh must have nq3=1. EPC in 2D materials may require even denser q-sampling
+    than 3D due to reduced dimensionality. Monitor convergence of lambda with q-mesh
+    density. The q->0 contribution to EPC diverges for optical modes — flag this.
+    el_ph_sigma sweep: test 0.01-0.05 Ry for 2D metals.
+
+    ## Validation Targets
+
+
+    - `electron_phonon_mode_valid`
+
+    - `lambda_positive`
+
+    - `a2F_positive`
+
+    - `qmesh_finer_than_stability`
+
+    - `sigma_metadata_present`
+
+    '
+- stage_name: Superconducting Tc Estimation
+  stage_id: 15_tc
+  stage_type: superconductivity
+  physics_question: What is the estimated superconducting transition temperature Tc,
+    and under what approximations?
+  upstream_dependencies:
+  - 14_epc
+  downstream_dependencies: []
+  required_inputs:
+  - lambda_tc.in
+  produced_outputs:
+  - lambda_tc.out
+  - tc_estimate.yaml
+  qe_programs:
+  - lambda.x
+  validation_targets:
+  - two_grid_overlap_required
+  - mu_star_explicit
+  - method_declared
+  - mcmillan_applicability
+  - formula_warning_emitted
+  _readme: '# 15_tc — Superconducting Tc Estimation
+
+
+    **Stage Type**: `superconductivity`
+
+
+    ---
+
+
+    ## 1. Physics Question
+
+
+    What is the estimated superconducting transition temperature Tc, and under what
+    approximations?
+
+
+    ## 2. Upstream Dependencies
+
+
+    14_epc
+
+
+    ## 3. Downstream Dependencies
+
+
+    None (terminal stage)
+
+
+    ## 4. Required QE Programs
+
+
+    lambda.x
+
+
+    ## 5. Expected Outputs
+
+
+    - `lambda_tc.out`
+
+    - `tc_estimate.yaml`
+
+
+    ## 6. Success Criteria
+
+
+    - [x] Tc estimate includes explicit method declaration (McMillan or Allen-Dynes)
+
+    - [x] mu* value explicitly stated and justified
+
+    - [x] Two-grid overlap between dense EPC k/q grids verified
+
+    - [x] Tc estimation caveats and applicability limits documented
+
+
+    ## 7. Failure Criteria
+
+
+    - [ ] Single-grid (preliminary) Tc presented as final without caveat
+
+    - [ ] mu* not stated or unjustified (typical range 0.10-0.15)
+
+    - [ ] No two-grid overlap verification — Tc may be unconverged
+
+    - [ ] McMillan formula applied outside its validity range (lambda > 2.0)
+
+
+    ## Description
+
+
+    Estimate Tc from EPC lambda, omega_log, and a2F using McMillan or Allen-Dynes
+    formula.
+
+
+    lambda.x is a post-processing tool that reads EPC output.
+
+
+    MUST declare if Tc is same-grid (preliminary) or multi-grid (converged).
+
+
+    QE''s own documentation states lambda.x gives an ESTIMATE — always attach formula
+    caveat.
+
+
+    Note: Allen-Dynes is also an approximation; full Eliashberg or SCDFT is beyond
+    QE scope.
+
+
+
+    ## 2D Materials Considerations
+
+
+    2D superconductivity: Tc in 2D materials may be affected by substrate interactions,
+    doping, and strain that are not captured in the bare QE calculation. Always state
+    these caveats. Ising superconductivity in 2D TMDs may enhance in-plane critical
+    field beyond Pauli limit.
+
+    ## Validation Targets
+
+
+    - `two_grid_overlap_required`
+
+    - `mu_star_explicit`
+
+    - `method_declared`
+
+    - `mcmillan_applicability`
+
+    - `formula_warning_emitted`
+
+    '
+- stage_name: Elastic Constants
+  stage_id: 16_elastic
+  stage_type: mechanical
+  physics_question: What are the elastic constants, and does the 2D material satisfy
+    mechanical stability (Born criteria)?
+  upstream_dependencies:
+  - 05_final_relax
+  downstream_dependencies: []
+  required_inputs:
+  - elastic_config.yaml
+  produced_outputs:
+  - elastic_constants.yaml
+  - mechanical_stability_verdict.yaml
+  qe_programs:
+  - pw.x
+  validation_targets:
+  - born_stability_2d
+  - elastic_linearity
+  - strain_range_adequate
+  _readme: '# 16_elastic — Elastic Constants
+
+
+    **Stage Type**: `mechanical`
+
+
+    ---
+
+
+    ## 1. Physics Question
+
+
+    What are the elastic constants, and does the 2D material satisfy mechanical stability
+    (Born criteria)?
+
+
+    ## 2. Upstream Dependencies
+
+
+    05_final_relax
+
+
+    ## 3. Downstream Dependencies
+
+
+    None (terminal stage)
+
+
+    ## 4. Required QE Programs
+
+
+    pw.x
+
+
+    ## 5. Expected Outputs
+
+
+    - `elastic_constants.yaml`
+
+    - `mechanical_stability_verdict.yaml`
+
+
+    ## 6. Success Criteria
+
+
+    - [x] All required elastic constants computed (C11, C12, C66 for hexagonal 2D)
+
+    - [x] Born stability criteria satisfied for 2D: C11 > 0, C11 > |C12|, C66 > 0
+
+    - [x] Stress-strain response linear in the elastic regime (small strains)
+
+
+    ## 7. Failure Criteria
+
+
+    - [ ] Born criteria violated — material is mechanically unstable
+
+    - [ ] Nonlinear stress-strain response indicates anharmonic effects or phase transition
+
+    - [ ] Insufficient strain points for reliable elastic constant extraction
+
+
+    ## Description
+
+
+    Calculate 2D elastic constants via energy-strain or stress-strain method.
+
+
+    Independent of electronic/vibrational chains — uses only relaxed geometry.
+
+
+    2D Born criteria: C11>0, C11>|C12|, C66>0 (different from 3D).
+
+
+
+    ## 2D Materials Considerations
+
+
+    2D-specific: elastic constants in N/m (not GPa). Convert by multiplying by vacuum
+    thickness. Born criteria for 2D hexagonal: C11>0, C11>|C12|, C66>0. In-plane Young''s
+    modulus Y_2D = (C11^2 - C12^2)/C11.
+
+    ## Validation Targets
+
+
+    - `born_stability_2d`
+
+    - `elastic_linearity`
+
+    - `strain_range_adequate`
+
+    '
+- stage_name: Ab Initio Molecular Dynamics
+  stage_id: 17_aimd
+  stage_type: thermal
+  physics_question: Is the 2D structure thermally stable at finite temperature — does
+    it maintain its geometry or reconstruct?
+  upstream_dependencies:
+  - 05_final_relax
+  downstream_dependencies: []
+  required_inputs:
+  - aimd_config.yaml
+  produced_outputs:
+  - aimd_trajectory.xyz
+  - aimd_summary.yaml
+  qe_programs:
+  - pw.x
+  validation_targets:
+  - structure_preserved
+  - temperature_equilibration
+  - energy_drift
+  - no_diffusion_to_vacuum
+  _readme: '# 17_aimd — Ab Initio Molecular Dynamics
+
+
+    **Stage Type**: `thermal`
+
+
+    ---
+
+
+    ## 1. Physics Question
+
+
+    Is the 2D structure thermally stable at finite temperature — does it maintain
+    its geometry or reconstruct?
+
+
+    ## 2. Upstream Dependencies
+
+
+    05_final_relax
+
+
+    ## 3. Downstream Dependencies
+
+
+    None (terminal stage)
+
+
+    ## 4. Required QE Programs
+
+
+    pw.x
+
+
+    ## 5. Expected Outputs
+
+
+    - `aimd_trajectory.xyz`
+
+    - `aimd_summary.yaml`
+
+
+    ## 6. Success Criteria
+
+
+    - [x] Structure preserved throughout simulation (no bond breaking beyond thermal
+    fluctuations)
+
+    - [x] Temperature equilibrated around target within acceptable fluctuations
+
+    - [x] Energy drift < acceptable threshold over simulation time
+
+    - [x] No unphysical atomic displacements or diffusion events
+
+
+    ## 7. Failure Criteria
+
+
+    - [ ] Structure disintegrates or reconstructs at target temperature
+
+    - [ ] Temperature never equilibrates (runaway heating or cooling)
+
+    - [ ] Large energy drift indicates poor SCF convergence per MD step
+
+    - [ ] Atoms diffuse out of the layer into vacuum
+
+
+    ## Description
+
+
+    Born-Oppenheimer MD at target temperature(s) to assess thermal stability.
+
+
+    Computationally expensive — run only AFTER geometry is finalized.
+
+
+    For 2D materials: monitor if atoms remain in-plane or diffuse into vacuum.
+
+
+    Typical: NVT ensemble, 5-10 ps, time step 1-2 fs.
+
+
+
+    ## 2D Materials Considerations
+
+
+    2D: monitor out-of-plane atomic displacements (z-coordinate variance). Check that
+    the 2D layer does not buckle or reconstruct at finite T. Vacuum layer must be
+    large enough to accommodate thermal vibrations without interaction between periodic
+    images.
+
+    ## Validation Targets
+
+
+    - `structure_preserved`
+
+    - `temperature_equilibration`
+
+    - `energy_drift`
+
+    - `no_diffusion_to_vacuum`
+
+    '
+- stage_name: Exfoliation / Cleavage Energy
+  stage_id: 18_exfoliation
+  stage_type: mechanical
+  physics_question: What is the energy required to exfoliate a monolayer from the
+    bulk — is mechanical exfoliation feasible?
+  upstream_dependencies:
+  - 05_final_relax
+  downstream_dependencies: []
+  required_inputs:
+  - exfoliation_config.yaml
+  produced_outputs:
+  - exfoliation_energy.yaml
+  - cleavage_energy_vs_separation.dat
+  qe_programs:
+  - pw.x
+  validation_targets:
+  - energy_plateau
+  - exfoliation_feasibility
+  - vdw_correction_applied
+  _readme: '# 18_exfoliation — Exfoliation / Cleavage Energy
+
+
+    **Stage Type**: `mechanical`
+
+
+    ---
+
+
+    ## 1. Physics Question
+
+
+    What is the energy required to exfoliate a monolayer from the bulk — is mechanical
+    exfoliation feasible?
+
+
+    ## 2. Upstream Dependencies
+
+
+    05_final_relax
+
+
+    ## 3. Downstream Dependencies
+
+
+    None (terminal stage)
+
+
+    ## 4. Required QE Programs
+
+
+    pw.x
+
+
+    ## 5. Expected Outputs
+
+
+    - `exfoliation_energy.yaml`
+
+    - `cleavage_energy_vs_separation.dat`
+
+
+    ## 6. Success Criteria
+
+
+    - [x] Exfoliation energy converges to a plateau as interlayer separation increases
+
+    - [x] Energy value physically reasonable for vdW materials (< 1 N/m for exfoliable
+    2D)
+
+    - [x] van der Waals correction applied (DFT-D3, vdW-DF, or similar)
+
+
+    ## 7. Failure Criteria
+
+
+    - [ ] No energy plateau — exfoliation energy does not converge with separation
+
+    - [ ] Exfoliation energy > 2 N/m (likely not exfoliable by mechanical methods)
+
+    - [ ] Missing vdW correction (bare DFT cannot describe interlayer binding)
+
+
+    ## Description
+
+
+    Calculate energy vs interlayer separation curve.
+
+
+    Requires bulk reference or bilayer calculation.
+
+
+    Key descriptor for 2D material synthesizability.
+
+
+    vdW correction MANDATORY — bare GGA cannot describe interlayer binding.
+
+
+
+    ## 2D Materials Considerations
+
+
+    2D: exfoliation energy in meV/A^2 or N/m. Typical exfoliable 2D: < 0.3-0.5 N/m
+    (graphene ~0.3 N/m). Compare with known exfoliated materials. Method: fixed in-plane
+    lattice, vary interlayer distance, fit to universal binding curve.
+
+    ## Validation Targets
+
+
+    - `energy_plateau`
+
+    - `exfoliation_feasibility`
+
+    - `vdw_correction_applied`
+
+    '
+- stage_name: Optical Properties (Dielectric Function)
+  stage_id: 19_optical
+  stage_type: optical
+  physics_question: What is the frequency-dependent dielectric function and optical
+    absorption spectrum?
+  upstream_dependencies:
+  - 06_scf
+  downstream_dependencies: []
+  required_inputs:
+  - optical_config.yaml
+  produced_outputs:
+  - dielectric_function.dat
+  - absorption_spectrum.dat
+  qe_programs:
+  - pw.x
+  - epsilon.x
+  validation_targets:
+  - kramers_kronig_consistency
+  - absorption_onset_vs_gap
+  - kmesh_density_optical
+  - nbnd_empty_states
+  _readme: '# 19_optical — Optical Properties (Dielectric Function)
+
+
+    **Stage Type**: `optical`
+
+
+    ---
+
+
+    ## 1. Physics Question
+
+
+    What is the frequency-dependent dielectric function and optical absorption spectrum?
+
+
+    ## 2. Upstream Dependencies
+
+
+    06_scf
+
+
+    ## 3. Downstream Dependencies
+
+
+    None (terminal stage)
+
+
+    ## 4. Required QE Programs
+
+
+    pw.x, epsilon.x
+
+
+    ## 5. Expected Outputs
+
+
+    - `dielectric_function.dat`
+
+    - `absorption_spectrum.dat`
+
+
+    ## 6. Success Criteria
+
+
+    - [x] Dielectric function satisfies Kramers-Kronig consistency
+
+    - [x] Absorption onset consistent with electronic band gap
+
+    - [x] k-mesh dense enough for converged optical spectra
+
+    - [x] Sufficient empty bands (nbnd) for target energy range
+
+
+    ## 7. Failure Criteria
+
+
+    - [ ] Kramers-Kronig violation indicates numerical issues
+
+    - [ ] Absorption below the band gap (unphysical for perfect crystal at T=0)
+
+    - [ ] k-mesh too sparse for reliable optical matrix elements
+
+    - [ ] nbnd insufficient for target photon energy range
+
+
+    ## Description
+
+
+    Independent-particle approximation (IPA) dielectric function from epsilon.x.
+
+
+    Requires dense k-mesh and sufficient empty bands.
+
+
+    Independent of phonon/EPC chain.
+
+
+    For 2D: optical properties are strongly anisotropic (in-plane vs out-of-plane).
+
+
+
+    ## 2D Materials Considerations
+
+
+    2D: optical absorption is strongly layer-dependent. In-plane vs out-of-plane response
+    differs dramatically. Excitonic effects (beyond IPA) may be important for 2D semiconductors
+    but require BSE (beyond current QE scope).
+
+    ## Validation Targets
+
+
+    - `kramers_kronig_consistency`
+
+    - `absorption_onset_vs_gap`
+
+    - `kmesh_density_optical`
+
+    - `nbnd_empty_states`
+
+    '
+- stage_name: Final Physics Report
+  stage_id: 20_report
+  stage_type: report
+  physics_question: 'Synthesis: what is the overall physics verdict for this 2D material,
+    based on ALL upstream evidence?'
+  upstream_dependencies:
+  - 00_structure
+  - 01_pseudopotentials
+  - 02_preconv
+  - 03_relax
+  - 04_conv
+  - 05_final_relax
+  - 06_scf
+  - 07_bands
+  - 08_dos
+  - 09_charge
+  - 10_workfunction
+  - 11_bader
+  - 12_ph_stability
+  - 13_q2r_matdyn
+  - 14_epc
+  - 15_tc
+  - 16_elastic
+  - 17_aimd
+  - 18_exfoliation
+  - 19_optical
+  downstream_dependencies: []
+  required_inputs:
+  - report_config.yaml
+  produced_outputs:
+  - final_report.md
+  - physics_verdict.yaml
+  - report.html (optional)
+  qe_programs: []
+  validation_targets:
+  - all_stages_complete_or_flagged
+  - evidence_citation_required
+  - score_deterministic
+  - no_unsupported_claims
+  - privacy_redacted
+  _readme: '# 20_report — Final Physics Report
+
+
+    **Stage Type**: `report`
+
+
+    ---
+
+
+    ## 1. Physics Question
+
+
+    Synthesis: what is the overall physics verdict for this 2D material, based on
+    ALL upstream evidence?
+
+
+    ## 2. Upstream Dependencies
+
+
+    00_structure, 01_pseudopotentials, 02_preconv, 03_relax, 04_conv, 05_final_relax,
+    06_scf, 07_bands, 08_dos, 09_charge, 10_workfunction, 11_bader, 12_ph_stability,
+    13_q2r_matdyn, 14_epc, 15_tc, 16_elastic, 17_aimd, 18_exfoliation, 19_optical
+
+
+    ## 3. Downstream Dependencies
+
+
+    None (terminal stage)
+
+
+    ## 4. Required QE Programs
+
+
+    None
+
+
+    ## 5. Expected Outputs
+
+
+    - `final_report.md`
+
+    - `physics_verdict.yaml`
+
+    - `report.html (optional)`
+
+
+    ## 6. Success Criteria
+
+
+    - [x] Every physics claim cites a specific stage/output as evidence source
+
+    - [x] Score grading follows deterministic formula (blockers/errors/warnings/provenance)
+
+    - [x] Missing stages flagged as ''not evaluated'' rather than silently omitted
+
+    - [x] No unsupported claims, no generated text without evidence citation
+
+
+    ## 7. Failure Criteria
+
+
+    - [ ] Claims without evidence citation (agent hallucination risk)
+
+    - [ ] Final score presented without component breakdown
+
+    - [ ] Missing critical stage output but report claims ''complete''
+
+    - [ ] Absolute paths, usernames, or hostnames exposed in report
+
+
+    ## Description
+
+
+    Aggregate ALL stage outputs into a structured physics report.
+
+
+    Score ranges: 8-10 publishable, 6-8 adequate (needs convergence), 4-6 concerning,
+    <4 unreliable.
+
+
+    Scoring formula: start at 100, subtract: 30*blockers, 15*errors, 5*warnings, 20*missing_summaries,
+    10*missing_provenance.
+
+
+    Each section of the report corresponds to one or more workflow stages.
+
+
+    The report is the TERMINAL output — it is consumed by the agent (via evidence
+    pack only).
+
+
+
+    ## 2D Materials Considerations
+
+
+    2D-specific report sections: stability (phonon + mechanical), electronic structure,
+    charge analysis, work function, exfoliation feasibility, superconductivity (if
+    applicable). The dimensionality (2D) must be explicitly stated in the report header.
+
+    ## Validation Targets
+
+
+    - `all_stages_complete_or_flagged`
+
+    - `evidence_citation_required`
+
+    - `score_deterministic`
+
+    - `no_unsupported_claims`
+
+    - `privacy_redacted`
+
+    '

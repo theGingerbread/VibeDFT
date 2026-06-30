@@ -1,0 +1,165 @@
+.DS_Store
+.omo/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+dist/
+build/
+*.egg-info/
+.venv/
+
+# Research / analysis artifacts
+.research/
+
+# Local agent/tool state and scratch space
+.opencode/
+tmp/
+task_plan.md
+findings.md
+progress.md
+*.bak
+
+# Literature source files and extracted figure images stay local unless a
+# publication/license review explicitly approves tracking them.
+paper/tmp/
+paper/logs/
+paper/paper/
+paper/resources/papers/*.pdf
+paper/resources/screenshots/**/*.png
+paper/resources/screenshots/**/*.jpg
+paper/resources/screenshots/**/*.jpeg
+paper/resources/screenshots/**/.DS_Store
+
+# Manuscript build outputs are reproducible; keep the TeX source tracked.
+paper/manuscript/*.aux
+paper/manuscript/*.fdb_latexmk
+paper/manuscript/*.fls
+paper/manuscript/*.log
+paper/manuscript/*.out
+paper/manuscript/*.pdf
+paper/manuscript/*.xdv
+
+# Runtime / QE heavy outputs — never track
+*.out
+*.dat
+*.gp
+*.phdos
+*.freq
+*.dyn
+*.dyn*
+*.fc
+*.xml
+*.wfc*
+*.mix*
+*.igk*
+*.dvscf*
+*.hub
+*.save/
+out/
+out_*/
+*/out/
+*/out_*/
+
+# Scheduler / runtime logs — hostnames, absolute paths, environment leaks
+cases/**/*.err
+cases/**/*.log
+cases/**/*.bak
+cases/**/*.bak*
+cases/**/*stdout*
+cases/**/*stderr*
+cases/**/CRASH
+cases/**/crash*
+
+# Runtime outputs
+*.slurm
+*.png
+tests/Templates/
+
+# Case directory: track contracts only
+cases/**/.DS_Store
+cases/**/outputs/
+cases/**/*.out
+cases/**/*.dat
+cases/**/*.gp
+cases/**/*.freq
+cases/**/*.dyn*
+cases/**/*.fc
+cases/**/*.xml
+cases/**/*.save/
+cases/**/*.wfc*
+cases/**/*.mix*
+cases/**/*.dvscf*
+cases/**/*.dos
+cases/**/*.pdos*
+cases/**/*.bands_*
+cases/**/*.html
+cases/**/report.json
+cases/**/*.gnu
+cases/**/*.rap
+cases/**/*projwfc*
+
+# EPC runtime outputs — large numerical binary/text artifacts
+cases/**/elph_dir/
+cases/**/dyna2F
+cases/**/elph.gamma.*
+cases/**/alpha2F.dat
+cases/**/lambda.dat
+cases/**/matdyn.dos
+cases/**/matdyn.modes
+
+# Whitelist case contracts + QE input files (.in are text recipes, not runtime)
+!cases/**/*.in
+!cases/**/README.md
+!cases/**/REVIEW_PLAN.md
+!cases/**/TODO.md
+!cases/**/WORKFLOW_GRAPH.md
+!cases/**/DEVELOPMENT_ROADMAP.md
+!cases/**/stage.yaml
+!cases/**/metadata/
+!cases/**/metadata/*.yaml
+!cases/**/metadata/*.json
+!cases/**/schemas/
+!cases/**/schemas/*.md
+!cases/**/docs/
+!cases/**/docs/*.md
+!cases/**/shared/
+!cases/**/shared/*.md
+!cases/**/shared/templates/
+!cases/**/shared/templates/*.md
+!cases/**/.gitkeep
+
+# Runtime failure artifacts (overrides .in whitelist above)
+cases/**/*failed_*
+cases/**/*recovery_*
+cases/**/*input_tmp.*
+
+# Cluster-variant derived inputs (generated from canonical .in with sed)
+cases/**/*.bcgong.*
+cases/**/*.hzw.*
+
+# Heavy local working areas — data stays on disk, never tracked.
+# cases/K-HfCl2/intercalation/ holds ~270MB of runtime dumps (sc/, Li_1/, Li_2/,
+# rx/) plus a handful of small case-contract files; the whole dir is treated
+# as a local analysis area like tmp/. Untracked via
+# `git rm --cached -r` (working-tree data preserved).
+cases/K-HfCl2/intercalation/
+
+# Frontend build assets (also covered by src/vibedft/frontend/.gitignore;
+# repeated here so the policy is visible at the repo root).
+src/vibedft/frontend/node_modules/
+src/vibedft/frontend/dist/
+
+# LaTeX build products are reproducible from the tracked manuscript source.
+paper/*.aux
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.log
+paper/*.out
+paper/*.pdf
+paper/*.xdv
+cases/K-HfCl2/intercalation/
+
+# Frontend build assets (also covered by src/vibedft/frontend/.gitignore;
+# repeated here so the policy is visible at the repo root).
+src/vibedft/frontend/node_modules/
+src/vibedft/frontend/dist/

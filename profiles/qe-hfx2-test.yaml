@@ -1,0 +1,7 @@
+id: qe-hfx2-test
+description: Quick test SCF profile for VibeDFT workflow validation.
+software: qe
+parameters:
+  qe.pw.system.ecutwfc: 60
+  qe.pw.system.ecutrho: 480
+  common.kpoints.grid: [4, 4, 1]

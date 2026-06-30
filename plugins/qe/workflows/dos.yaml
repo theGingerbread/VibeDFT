@@ -1,0 +1,23 @@
+id: qe.dos.v1
+software: qe
+description: |
+  QE density-of-states post-processing (dos.x).
+  Reads NSCF charge density. Depends on: qe.nscf_uniform.v1.
+stages:
+  - id: dos
+    program: dos.x
+    template: templates/scf_dos/dos.in.j2
+    description: DOS post-processing.
+templates:
+  - templates/scf_dos/dos.in.j2
+uses:
+  - qe.pw.control.prefix
+  - qe.pw.control.outdir
+  - qe.dos.prefix
+  - qe.dos.outdir
+  - qe.dos.DeltaE
+  - qe.dos.ngauss
+  - qe.dos.degauss
+  - qe.dos.source_outdir
+parameters:
+  qe.dos.source_outdir: ../03_nscf_uniform/out_nscf/

@@ -1,0 +1,38 @@
+&CONTROL
+  calculation = 'scf'
+  outdir = './out_epc/'
+  prefix = '{{ stage_prefix }}'
+  pseudo_dir = '{{ pseudo_dir }}'
+  verbosity = 'high'
+/
+&SYSTEM
+  ibrav = 0
+  nat = 3
+  ntyp = 2
+  ecutwfc = {{ ecutwfc }}
+  ecutrho = {{ ecutrho }}
+  occupations = '{{ occupations }}'
+  smearing = '{{ smearing }}'
+  degauss = {{ degauss }}
+{% if tot_charge and tot_charge != 0 %}
+  tot_charge = {{ tot_charge }}
+{% endif %}
+/
+&ELECTRONS
+  conv_thr = 1.0d-12
+  electron_maxstep = 200
+  mixing_beta = 0.4
+/
+ATOMIC_SPECIES
+  Hf  178.49  Hf.pbe-spn-rrkjus_psl.1.0.0.UPF
+  I   126.90  I.pbe-n-rrkjus_psl.1.0.0.UPF
+ATOMIC_POSITIONS crystal
+  Hf  -0.0000000000  -0.0000000000  0.5000000000
+  I    0.6666666870   0.3333333430  0.5648225611
+  I    0.6666666870   0.3333333430  0.4351774389
+K_POINTS automatic
+  {{ k_grid[0] }} {{ k_grid[1] }} {{ k_grid[2] }}  0 0 0
+CELL_PARAMETERS angstrom
+  3.890000000  -0.000000000  0.000000000
+  -1.945000000  3.368000000  0.000000000
+  0.000000000   0.000000000  40.000000000

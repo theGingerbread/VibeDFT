@@ -1,0 +1,29 @@
+parameters:
+  - id: vasp.incar.ENCUT
+    software: vasp
+    file: INCAR
+    name: ENCUT
+    type: float
+    unit: eV
+    required: true
+    default: null
+    category: basis
+    ui:
+      label: Plane-wave cutoff
+      level: basic
+      widget: number
+      help: Energy cutoff for plane-wave basis.
+
+  - id: vasp.incar.EDIFF
+    software: vasp
+    file: INCAR
+    name: EDIFF
+    type: float
+    required: true
+    default: 1.0e-6
+    category: convergence
+    ui:
+      label: Electronic convergence
+      level: basic
+      widget: number
+      help: Electronic self-consistency convergence threshold.

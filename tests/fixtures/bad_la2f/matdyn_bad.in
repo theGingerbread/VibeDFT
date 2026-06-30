@@ -1,0 +1,7 @@
+&INPUT
+  asr = 'simple'
+  flfrc = 'test.fc'
+  flfrq = 'test.freq.gp'
+  q_in_band_form = .true.
+  la2F = .true.
+/

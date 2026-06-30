@@ -1,0 +1,9 @@
+&INPUT
+  flfrq = '{{ qe.matdyn.flfrq | default('freq.gp') }}'
+  flfrc = '{{ qe.matdyn.flfrc | default('fc') }}'
+  q_in_band_form = .{{ 'true' if qe.matdyn.q_in_band_form | default(true) else 'false' }}
+  q_in_cryst_coord = .{{ 'true' if qe.matdyn.q_in_cryst_coord | default(true) else 'false' }}
+/
+{% for label, qpt in [ ('GAMMA', [0.0,0.0,0.0]), ('M', [0.5,0.0,0.0]), ('K', [0.3333,0.3333,0.0]), ('GAMMA', [0.0,0.0,0.0]) ] %}
+  {{ "%14.9f"|format(qpt[0]) }} {{ "%14.9f"|format(qpt[1]) }} {{ "%14.9f"|format(qpt[2]) }} 50  ! {{ label }}
+{%- endfor %}

@@ -1,0 +1,111 @@
+# VibeDFT — Common QE Error Patterns
+#
+# This is a SEED KNOWLEDGE BASE for the agent layer and future automated
+# output scanning.  Actual detection logic lives in the Python validators
+# and output parsers.  This file documents known error signatures for
+# reference, training, and future LLM-based explanation layers.
+#
+# Each entry: pattern (regex), program, severity, message template.
+
+patterns:
+  # ── pw.x errors ──
+  - id: pw.scf_not_converged
+    pattern: "(?i)convergence NOT achieved|maximum number of (?:SCF|iterations) reached"
+    program: pw.x
+    severity: error
+    message: "SCF did not converge within the maximum number of iterations."
+
+  - id: pw.bad_namelist
+    pattern: "(?i)Error in routine.*read_namelist|bad line in namelist"
+    program: pw.x
+    severity: error
+    message: "Namelist syntax error — check for typos, missing commas, or stray characters."
+
+  - id: pw.pseudo_not_found
+    pattern: "(?i)error.*(?:opening|reading|pseudo).*file"
+    program: pw.x
+    severity: error
+    message: "Pseudopotential file not found — check pseudo_dir path and file names."
+
+  - id: pw.too_many_bands
+    pattern: "(?i)too many bands"
+    program: pw.x
+    severity: error
+    message: "Too many bands requested — increase nbnd or check the band count."
+
+  - id: pw.c_axis_stress
+    pattern: "(?i)negative rho"
+    program: pw.x
+    severity: warning
+    message: "Negative charge density — check structure, pseudopotentials, or smearing."
+
+  # ── ph.x errors ──
+  - id: ph.no_save_directory
+    pattern: "(?i)cannot open.*save|prefix.*not found|no such file.*_ph0"
+    program: ph.x
+    severity: error
+    message: "ph.x cannot find the SCF save directory — check prefix/outdir match pw.x."
+
+  - id: ph.dyn_matrix_not_positive
+    pattern: "(?i)negative eigenvalue|imaginary frequency"
+    program: ph.x
+    severity: warning
+    message: "Imaginary phonon frequencies detected — structure may be dynamically unstable."
+
+  - id: ph.representation_error
+    pattern: "(?i)representation.*error|cannot find representation"
+    program: ph.x
+    severity: error
+    message: "Representation error in ph.x — likely a symmetry or q-point issue."
+
+  - id: ph.out_of_memory
+    pattern: "(?i)out of memory|cannot allocate"
+    program: ph.x
+    severity: error
+    message: "ph.x ran out of memory — reduce k/q grid or use more nodes."
+
+  # ── q2r.x errors ──
+  - id: q2r.la2f_crash
+    pattern: "(?i)Error.*la2[fF]"
+    program: q2r.x
+    severity: error
+    message: "q2r.x crashed due to la2F=.true. — remove it from q2r input."
+
+  # ── matdyn.x errors ──
+  - id: matdyn.fc_not_found
+    pattern: "(?i)error opening.*\\.fc"
+    program: matdyn.x
+    severity: error
+    message: "matdyn.x cannot open the force-constant file — run q2r.x first."
+
+  # ── lambda.x errors ──
+  - id: lambda.no_elph_files
+    pattern: "(?i)error.*elph|no elph files found"
+    program: lambda.x
+    severity: error
+    message: "lambda.x cannot find EPC matrix element files — ensure ph.x EPC completed."
+
+  - id: lambda.nan_values
+    pattern: "(?i)\\bNaN\\b"
+    program: lambda.x
+    severity: warning
+    message: "NaN values in lambda.x output — Tc may be unreliable."
+
+  # ── General / Slurm ──
+  - id: general.segfault
+    pattern: "(?i)segmentation fault|SIGSEGV|signal 11"
+    program: any
+    severity: error
+    message: "Segmentation fault — likely a memory issue or compiler/library mismatch."
+
+  - id: general.oos
+    pattern: "(?i)oom-kill|Out Of Memory|Killed"
+    program: any
+    severity: error
+    message: "Job was killed (OOM) — request more memory or reduce problem size."
+
+  - id: general.timeout
+    pattern: "(?i)DUE TO TIME LIMIT"
+    program: any
+    severity: error
+    message: "Job exceeded walltime limit — increase #SBATCH --time or reduce parameters."

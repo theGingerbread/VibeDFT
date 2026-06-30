@@ -1,0 +1,7 @@
+&FERMI
+  prefix = '{{ qe.fs.prefix | default(qe.pw.control.prefix, true) }}'
+  outdir = '{{ qe.fs.outdir | default(qe.pw.control.outdir) }}'
+{% if qe.fs.deltaE is defined and qe.fs.deltaE is not none %}
+  deltaE = {{ qe.fs.deltaE }}
+{% endif %}
+/

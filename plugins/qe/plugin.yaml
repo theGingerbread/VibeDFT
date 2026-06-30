@@ -1,0 +1,3 @@
+id: qe
+name: Quantum ESPRESSO
+description: QE adapter for pw.x, ph.x, q2r.x, matdyn.x, lambda.x, and related post-processing.

@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vibedft"
+version = "0.1.0"
+description = "ASE-backed 2D materials superconductivity workflow system — parser, validator, physics analyzer, report generator, and local workbench."
+keywords = ["dft", "quantum-espresso", "superconductivity", "2d-materials", "workflow", "ase"]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+authors = [
+  {name = "VibeDFT contributors"},
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = [
+  "PyYAML>=6.0",
+  "Jinja2>=3.0",
+]
+
+[project.optional-dependencies]
+# ASE-backed structure IO: reads CIF/POSCAR/QE-in/QE-out via ase.io,
+# and gives access to the full ase.build/ase.spacegroup toolbox
+# (bulk, surface, adsorbate, defects). Symmetry analysis rides on
+# spglib which ``ase`` pulls in on most platforms.
+ase = ["ase>=3.22", "spglib>=2.0"]
+plot = ["matplotlib>=3.5"]
+server = ["fastapi>=0.100", "uvicorn>=0.20", "python-multipart>=0.0.5"]
+dev = ["pytest>=7", "httpx>=0.24"]
+# Recommended install on Preston's Mac — includes the ASE backend.
+all = ["vibedft[ase,plot,server,dev]"]
+
+[project.urls]
+Homepage = "https://github.com/theGingerbread/VibeDFT"
+Repository = "https://github.com/theGingerbread/VibeDFT.git"
+
+[project.scripts]
+vibedft = "vibedft.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

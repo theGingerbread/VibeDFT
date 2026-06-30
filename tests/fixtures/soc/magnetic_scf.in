@@ -1,0 +1,18 @@
+&CONTROL calculation='scf' prefix='test_mag' outdir='./out_mag/' pseudo_dir='/pseudo/' /
+&SYSTEM ibrav=0 nat=3 ntyp=2 ecutwfc=60 ecutrho=480
+  occupations='smearing' degauss=0.005
+  nspin=2 starting_magnetization(1)=0.5 starting_magnetization(2)=0.0
+/
+&ELECTRONS conv_thr=1.0d-12 /
+ATOMIC_SPECIES
+  Fe 55.845 Fe.UPF
+  O  16.00  O.UPF
+ATOMIC_POSITIONS crystal
+  Fe 0.0 0.0 0.5
+  O  0.667 0.333 0.565
+  O  0.667 0.333 0.435
+K_POINTS automatic 12 12 1 0 0 0
+CELL_PARAMETERS angstrom
+  3.0 0.0 0.0
+  -1.5 2.598 0.0
+  0.0 0.0 30.0

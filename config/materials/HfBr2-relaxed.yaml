@@ -1,0 +1,17 @@
+id: HfBr2-relaxed
+formula: HfBr2
+family: HfX2
+pseudo_dir: <PSEUDO_DIR>  # Customize for your cluster
+atomic_species:
+  Hf: {mass: 178.49, pseudo: Hf.pbe-spn-rrkjus_psl.1.0.0.UPF}
+  Br: {mass: 79.904, pseudo: Br.pbe-n-rrkjus_psl.1.0.0.UPF}
+cell_parameters:
+  - [3.497066916, 0.000000000, -0.000000000]
+  - [-1.748533459, 3.028548788, 0.000000000]
+  - [-0.000000000, 0.000000000, 29.648391198]
+atomic_positions:
+  - {element: Hf, pos: [-0.0000000000, 0.0000000000, 0.5000000000]}
+  - {element: Br, pos: [0.6666666670, 0.3333333330, 0.5612907693]}
+  - {element: Br, pos: [0.6666666670, 0.3333333330, 0.4387092307]}
+parameters:
+  qe.pw.control.prefix: HfBr2

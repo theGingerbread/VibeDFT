@@ -1,0 +1,421 @@
+{
+  "id": "realdata.minimum_objective_suite",
+  "source": "remote_fixture_inventory",
+  "description": "Minimum metadata-only real-data regression fixture suite from the objective file.",
+  "import_policy": "metadata_only",
+  "warnings": [
+    "Remote heavy artifacts are registered by safe alias, metadata, checksum, or sample only."
+  ],
+  "metadata": {
+    "objective_section": "11.real_data_regression",
+    "no_heavy_artifact_import": true
+  },
+  "artifacts": [
+    {
+      "artifact_path": "remote://fs/hfbr2/hfbr2_fs.bxsf",
+      "artifact_type": "bands",
+      "parser_name": "manifest",
+      "parsed_quantity": "fermi_surface_bxsf_fixture",
+      "summary": "HfBr2 BXSF fixture for Fermi-surface topology and EF-crossing parser tests.",
+      "metadata": {
+        "fixture_key": "fs_hfbr2_bxsf",
+        "module": "fs",
+        "physics_use": "fermi_surface_topology",
+        "expected_outcome": "positive",
+        "expected_status": "pass",
+        "sample_path": "samples/hfbr2_fs_sample.bxsf",
+        "smoke_parser": "fs.bxsf",
+        "size_policy": "metadata_checksum_sample",
+        "sample_lines": 20
+      },
+      "reliability": "medium"
+    },
+    {
+      "artifact_path": "remote://fs/hfcl2/hfcl2_fs.bxsf",
+      "artifact_type": "bands",
+      "parser_name": "manifest",
+      "parsed_quantity": "fermi_surface_bxsf_fixture",
+      "summary": "HfCl2 BXSF fixture for real dialect coverage.",
+      "metadata": {
+        "fixture_key": "fs_hfcl2_bxsf",
+        "module": "fs",
+                "physics_use": "fermi_surface_topology",
+                "expected_outcome": "positive",
+                "expected_status": "pass",
+                "sample_path": "samples/hfcl2_fs_sample.bxsf",
+                "smoke_parser": "fs.bxsf",
+                "size_policy": "metadata_checksum_sample"
+            },
+            "reliability": "medium"
+    },
+    {
+      "artifact_path": "remote://fs/hfi2/hfi2_fs.bxsf",
+      "artifact_type": "bands",
+      "parser_name": "manifest",
+      "parsed_quantity": "fermi_surface_bxsf_fixture",
+      "summary": "HfI2 BXSF fixture for real dialect coverage.",
+      "metadata": {
+        "fixture_key": "fs_hfi2_bxsf",
+        "module": "fs",
+                "physics_use": "fermi_surface_topology",
+                "expected_outcome": "positive",
+                "expected_status": "pass",
+                "sample_path": "samples/hfi2_fs_sample.bxsf",
+                "smoke_parser": "fs.bxsf",
+                "size_policy": "metadata_checksum_sample"
+            },
+            "reliability": "medium"
+    },
+    {
+      "artifact_path": "remote://electronic/hfbr2/e0p05/bands_dos",
+      "artifact_type": "bands",
+      "parser_name": "manifest",
+      "parsed_quantity": "bands_dos_fixture",
+      "summary": "HfBr2 e0p05 bands/DOS coupling fixture.",
+      "metadata": {
+        "fixture_key": "electronic_hfbr2_e0p05_bands_dos",
+        "module": "electronic",
+                "physics_use": "electronic_structure_regression",
+                "expected_outcome": "positive",
+                "expected_status": "pass",
+                "sample_path": "samples/hfbr2_e0p05_bands_dos",
+                "bands_sample_path": "samples/hfbr2_e0p05_bands_dos/bands.dat",
+                "dos_sample_path": "samples/hfbr2_e0p05_bands_dos/dos.dat",
+                "smoke_parser": "electronic.bands_dos",
+                "size_policy": "metadata_checksum_sample"
+            },
+            "reliability": "medium"
+    },
+    {
+      "artifact_path": "remote://electronic/hfbr2/e0p10/bands_dos",
+      "artifact_type": "bands",
+      "parser_name": "manifest",
+      "parsed_quantity": "bands_dos_fixture",
+      "summary": "HfBr2 e0p10 bands/DOS coupling fixture.",
+      "metadata": {
+        "fixture_key": "electronic_hfbr2_e0p10_bands_dos",
+        "module": "electronic",
+                "physics_use": "electronic_structure_regression",
+                "expected_outcome": "positive",
+                "expected_status": "pass",
+                "sample_path": "samples/hfbr2_e0p10_bands_dos",
+                "bands_sample_path": "samples/hfbr2_e0p10_bands_dos/bands.dat",
+                "dos_sample_path": "samples/hfbr2_e0p10_bands_dos/dos.dat",
+                "smoke_parser": "electronic.bands_dos",
+                "size_policy": "metadata_checksum_sample"
+            },
+            "reliability": "medium"
+    },
+    {
+      "artifact_path": "remote://electronic/hfbr2/e0p15/bands_dos",
+      "artifact_type": "bands",
+      "parser_name": "manifest",
+      "parsed_quantity": "bands_dos_fixture",
+      "summary": "HfBr2 e0p15 bands/DOS coupling fixture.",
+      "metadata": {
+        "fixture_key": "electronic_hfbr2_e0p15_bands_dos",
+        "module": "electronic",
+                "physics_use": "electronic_structure_regression",
+                "expected_outcome": "positive",
+                "expected_status": "pass",
+                "sample_path": "samples/hfbr2_e0p15_bands_dos",
+                "bands_sample_path": "samples/hfbr2_e0p15_bands_dos/bands.dat",
+                "dos_sample_path": "samples/hfbr2_e0p15_bands_dos/dos.dat",
+                "smoke_parser": "electronic.bands_dos",
+                "size_policy": "metadata_checksum_sample"
+            },
+            "reliability": "medium"
+    },
+    {
+      "artifact_path": "remote://type3/hfbr2_tise2/outputs/bader_het/ACF.dat",
+      "artifact_type": "output",
+      "parser_name": "manifest",
+      "parsed_quantity": "bader_acf_fixture",
+      "summary": "HfBr2/TiSe2 heterostructure ACF table for charge-transfer parser tests.",
+      "metadata": {
+        "fixture_key": "bader_hfbr2_tise2_het_acf",
+        "module": "charge",
+                "physics_use": "heterostructure_charge_transfer",
+                "expected_outcome": "positive",
+                "expected_status": "pass",
+                "sample_path": "samples/hfbr2_tise2_bader_het_acf.dat",
+                "smoke_parser": "charge.analysis",
+                "reference_acf_sample_paths": {
+                    "hfbr2": "samples/hfbr2_tise2_bader_hfbr2_ref_acf.dat",
+                    "tise2": "samples/hfbr2_tise2_bader_tise2_ref_acf.dat"
+                },
+                "layer_atom_indices": {
+                    "hfbr2": [1, 2],
+                    "tise2": [3, 4]
+                },
+                "planar_profile_sample_path": "samples/hfbr2_tise2_planar_avg.dat",
+                "cube_sample_path": "samples/hfbr2_tise2_rho.cube",
+                "size_policy": "small_text_fixture"
+            },
+            "reliability": "medium"
+        },
+    {
+      "artifact_path": "remote://type3/hfbr2_tise2/outputs/bader_hfbr2/ACF.dat",
+      "artifact_type": "output",
+      "parser_name": "manifest",
+      "parsed_quantity": "bader_acf_reference_fixture",
+      "summary": "HfBr2 same-lattice reference ACF table.",
+      "metadata": {
+        "fixture_key": "bader_hfbr2_tise2_hfbr2_ref_acf",
+        "module": "charge",
+                "physics_use": "charge_reference",
+                "expected_outcome": "positive",
+                "expected_status": "pass",
+                "sample_path": "samples/hfbr2_tise2_bader_hfbr2_ref_acf.dat",
+                "smoke_parser": "charge.acf",
+                "size_policy": "small_text_fixture"
+            },
+            "reliability": "medium"
+        },
+    {
+      "artifact_path": "remote://type3/hfbr2_tise2/outputs/bader_tise2/ACF.dat",
+      "artifact_type": "output",
+      "parser_name": "manifest",
+      "parsed_quantity": "bader_acf_reference_fixture",
+      "summary": "TiSe2 same-lattice reference ACF table.",
+      "metadata": {
+        "fixture_key": "bader_hfbr2_tise2_tise2_ref_acf",
+        "module": "charge",
+                "physics_use": "charge_reference",
+                "expected_outcome": "positive",
+                "expected_status": "pass",
+                "sample_path": "samples/hfbr2_tise2_bader_tise2_ref_acf.dat",
+                "smoke_parser": "charge.acf",
+                "size_policy": "small_text_fixture"
+            },
+            "reliability": "medium"
+        },
+    {
+      "artifact_path": "remote://type3/hfbr2_tise2/outputs/rho.cube",
+      "artifact_type": "cube",
+      "parser_name": "manifest",
+      "parsed_quantity": "cube_metadata_fixture",
+      "summary": "HfBr2/TiSe2 charge-density cube metadata fixture.",
+      "metadata": {
+        "fixture_key": "charge_hfbr2_tise2_rho_cube",
+        "module": "charge",
+                "physics_use": "cube_metadata",
+                "expected_outcome": "positive",
+                "expected_status": "pass",
+                "sample_path": "samples/hfbr2_tise2_rho.cube",
+                "smoke_parser": "charge.cube_metadata",
+                "size_policy": "metadata_checksum_sample"
+            },
+            "reliability": "medium"
+        },
+    {
+      "artifact_path": "remote://type3/hfbr2_tise2/outputs/rho_hetero.dat",
+      "artifact_type": "output",
+      "parser_name": "manifest",
+      "parsed_quantity": "charge_redistribution_fixture",
+      "summary": "HfBr2/TiSe2 charge redistribution fixture.",
+      "metadata": {
+        "fixture_key": "charge_hfbr2_tise2_rho_hetero",
+        "module": "charge",
+                "physics_use": "charge_redistribution",
+                "expected_outcome": "positive",
+                "expected_status": "pass",
+                "sample_path": "samples/hfbr2_tise2_rho_hetero.dat",
+                "smoke_parser": "charge.planar_profile",
+                "size_policy": "small_text_fixture"
+            },
+            "reliability": "medium"
+        },
+    {
+      "artifact_path": "remote://type3/hfbr2_tise2/outputs/planar_avg.dat",
+      "artifact_type": "output",
+      "parser_name": "manifest",
+      "parsed_quantity": "planar_average_fixture",
+      "summary": "HfBr2/TiSe2 planar average fixture.",
+      "metadata": {
+        "fixture_key": "planar_hfbr2_tise2_planar_avg",
+        "module": "planar",
+                "physics_use": "vacuum_alignment",
+                "expected_outcome": "positive",
+                "expected_status": "pass",
+                "sample_path": "samples/hfbr2_tise2_planar_avg.dat",
+                "smoke_parser": "charge.planar_profile",
+                "size_policy": "small_text_fixture"
+            },
+            "reliability": "medium"
+        },
+    {
+      "artifact_path": "remote://type3/hfbr2_tise2/outputs/pot_z.dat",
+      "artifact_type": "output",
+      "parser_name": "manifest",
+      "parsed_quantity": "planar_potential_fixture",
+      "summary": "HfBr2/TiSe2 z-averaged potential fixture.",
+      "metadata": {
+        "fixture_key": "planar_hfbr2_tise2_pot_z",
+        "module": "planar",
+                "physics_use": "vacuum_alignment",
+                "expected_outcome": "positive",
+                "expected_status": "pass",
+                "sample_path": "samples/hfbr2_tise2_pot_z.dat",
+                "smoke_parser": "charge.planar_profile",
+                "size_policy": "small_text_fixture"
+            },
+            "reliability": "medium"
+        },
+    {
+      "artifact_path": "remote://epc_positive/hfi2/ph48_ph64",
+      "artifact_type": "a2f",
+      "parser_name": "manifest",
+      "parsed_quantity": "positive_epc_fixture",
+      "summary": "HfI2 ph48/ph64 positive EPC fixture.",
+      "metadata": {
+        "fixture_key": "epc_positive_hfi2_ph48_ph64",
+        "module": "epc",
+        "physics_use": "superconductivity_positive_gate",
+        "expected_outcome": "positive",
+        "expected_status": "pass",
+        "sample_path": "hfi2_e005_legacy/outputs/lambdax.out",
+        "smoke_parser": "tc.reliability",
+        "size_policy": "metadata_checksum_sample"
+      },
+      "reliability": "medium"
+    },
+    {
+      "artifact_path": "remote://epc_positive/hfbr2/e0p02/ph64",
+      "artifact_type": "a2f",
+      "parser_name": "manifest",
+      "parsed_quantity": "positive_epc_fixture",
+      "summary": "HfBr2 e0p02 positive EPC fixture.",
+      "metadata": {
+        "fixture_key": "epc_positive_hfbr2_e0p02",
+        "module": "epc",
+                "physics_use": "superconductivity_positive_gate",
+                "expected_outcome": "positive",
+                "expected_status": "pass",
+                "sample_path": "samples/hfbr2_e0p02_lambdax.out",
+                "smoke_parser": "tc.reliability",
+                "size_policy": "metadata_checksum_sample"
+            },
+            "reliability": "medium"
+    },
+    {
+      "artifact_path": "remote://phonon_negative/k_hfcl2_top/fullq_8x8_20260623/phonon.freq.gp",
+      "artifact_type": "dyn",
+      "parser_name": "manifest",
+      "parsed_quantity": "negative_phonon_fixture",
+      "summary": "K-HfCl2 TOP negative fixture; imaginary phonon blocks EPC/Tc claims.",
+      "metadata": {
+        "fixture_key": "epc_negative_k_hfcl2_top",
+        "module": "epc",
+        "physics_use": "phonon_epc_negative_gate",
+        "minimum_frequency_cm-1": -87.9888,
+        "expected_outcome": "negative_gate",
+        "expected_status": "blocked",
+        "sample_path": "k_soft_mode/outputs/lambdax.out",
+        "phonon_freq_sample_path": "samples/k_hfcl2_top_freq.gp",
+        "smoke_parser": "tc.reliability",
+        "size_policy": "metadata_checksum_sample"
+      },
+      "blockers": [
+        "negative phonon fixture must never pass superconducting Tc verdicts"
+      ],
+      "reliability": "high"
+    },
+    {
+      "artifact_path": "remote://phonon_asr/na2_p3/asr/phonon.freq.gp",
+      "artifact_type": "dyn",
+      "parser_name": "manifest",
+      "parsed_quantity": "phonon_asr_sensitivity_fixture",
+      "summary": "Na2 P3 ASR phonon fixture for ASR/no-ASR sensitivity checks.",
+      "metadata": {
+        "fixture_key": "phonon_asr_na2_p3_asr",
+        "module": "phonon",
+                "physics_use": "asr_sensitivity",
+                "expected_outcome": "diagnostic",
+                "expected_status": "warning",
+                "sample_path": "samples/na2_p3_asr.freq.gp",
+                "smoke_parser": "phonon.freq_gp",
+                "asr_policy": "asr",
+                "size_policy": "metadata_checksum_sample"
+            },
+            "reliability": "medium"
+        },
+    {
+      "artifact_path": "remote://phonon_asr/na2_p3/no_asr/phonon.freq.gp",
+      "artifact_type": "dyn",
+      "parser_name": "manifest",
+      "parsed_quantity": "phonon_no_asr_sensitivity_fixture",
+      "summary": "Na2 P3 no-ASR phonon fixture for ASR/no-ASR sensitivity checks.",
+      "metadata": {
+        "fixture_key": "phonon_asr_na2_p3_no_asr",
+        "module": "phonon",
+                "physics_use": "asr_sensitivity",
+                "expected_outcome": "diagnostic",
+                "expected_status": "warning",
+                "sample_path": "samples/na2_p3_no_asr.freq.gp",
+                "smoke_parser": "phonon.freq_gp",
+                "asr_policy": "no_asr",
+                "size_policy": "metadata_checksum_sample"
+            },
+            "reliability": "medium"
+        },
+    {
+      "artifact_path": "remote://type3_blocker/hfbr2_tise2/gamma_ph/dynmat_asr.out",
+      "artifact_type": "dyn",
+      "parser_name": "manifest",
+      "parsed_quantity": "type3_blocker_fixture",
+      "summary": "HfBr2/TiSe2 Gamma-unstable fixture blocks final Type-III verdict.",
+      "metadata": {
+        "fixture_key": "type3_blocker_hfbr2_tise2_gamma_unstable",
+        "module": "band_alignment",
+                "physics_use": "type3_negative_gate",
+                "expected_outcome": "type3_blocker",
+                "expected_status": "blocked",
+                "sample_path": "samples/hfbr2_tise2_gamma_unstable_dynmat.out",
+                "smoke_parser": "phonon.dynmat_blocker",
+                "size_policy": "metadata_checksum_sample"
+            },
+            "blockers": [
+        "Gamma instability fixture must never pass final Type-III verdicts"
+      ],
+      "reliability": "medium"
+    },
+    {
+      "artifact_path": "remote://md/snse2/md300k_nvt",
+      "artifact_type": "output",
+      "parser_name": "manifest",
+      "parsed_quantity": "qe_md_fixture",
+      "summary": "SnSe2 md300k_nvt QE MD parser fixture.",
+      "metadata": {
+        "fixture_key": "md_snse2_md300k_nvt",
+        "module": "md",
+                "physics_use": "thermal_stability",
+                "expected_outcome": "positive",
+                "expected_status": "pass",
+                "sample_path": "samples/snse2_md300k_nvt",
+                "smoke_parser": "md.stability",
+                "size_policy": "metadata_checksum_sample"
+            },
+            "reliability": "medium"
+        },
+    {
+      "artifact_path": "tests/fixtures/research/elastic_synthetic_summary.dat",
+      "artifact_type": "output",
+      "parser_name": "manifest",
+      "parsed_quantity": "synthetic_elastic_fixture",
+      "summary": "Synthetic 2D elastic tensor fixture until real strain-sweep data exists.",
+      "metadata": {
+        "fixture_key": "elastic_synthetic_until_real_strain",
+        "module": "elastic",
+        "physics_use": "mechanical_stability_schema",
+        "expected_outcome": "missing_data",
+        "expected_status": "insufficient_evidence",
+        "sample_path": "elastic_synthetic_summary.dat",
+        "smoke_parser": "elastic.mechanical",
+        "size_policy": "small_text_fixture",
+        "real_strain_sweep_available": false
+      },
+      "reliability": "low"
+    }
+  ]
+}

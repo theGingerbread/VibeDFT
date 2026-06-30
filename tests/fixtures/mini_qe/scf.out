@@ -1,0 +1,16 @@
+
+     Program PWSCF v.7.2 starts on 01Jan2025 at 12:00:00
+
+     Self-consistent Calculation
+
+     iteration #  1     total energy              =    -100.00000000 Ry
+     estimated scf accuracy    <       1.0E-12 Ry
+     the Fermi energy is     0.5000 ev
+
+     convergence has been achieved
+
+!    total energy              =    -100.00000000 Ry
+
+     PWSCF        :     10.00s CPU     12.00s WALL
+
+     JOB DONE

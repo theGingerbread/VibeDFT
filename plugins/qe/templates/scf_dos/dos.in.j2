@@ -1,0 +1,13 @@
+&DOS
+  prefix = '{{ qe.pw.control.prefix }}'
+  outdir = '{{ qe.dos.source_outdir | default(qe.dos.outdir) | default(qe.pw.control.outdir) }}'
+{% if qe.dos.DeltaE %}
+  DeltaE = {{ qe.dos.DeltaE }}
+{% endif %}
+{% if qe.dos.ngauss is defined and qe.dos.ngauss is not none %}
+  ngauss = {{ qe.dos.ngauss }}
+{% endif %}
+{% if qe.dos.degauss is defined and qe.dos.degauss is not none %}
+  degauss = {{ qe.dos.degauss }}
+{% endif %}
+/

@@ -1,0 +1,20 @@
+{# ph_epc.in.j2 — EPC PHONON CALCULATION, electron_phonon ENABLED #}
+{# This is SEPARATE from ph_stability. Only used in EPC workflow stages. #}
+{# NOTE: QE 7.2 ph.x does NOT accept 'trans' with ldisp; removed. #}
+&INPUTPH
+  prefix = '{{ stage_prefix }}'
+  outdir = './out_epc/'
+  fildyn = '{{ fildyn }}'
+  ldisp = .true.
+  nq1 = {{ q_grid[0] }}
+  nq2 = {{ q_grid[1] }}
+  nq3 = {{ q_grid[2] }}
+  electron_phonon = 'dvscf'
+  el_ph_sigma = {{ el_ph_sigma }}
+  el_ph_nsigma = {{ el_ph_nsigma }}
+  tr2_ph = 1.0d-14
+  alpha_mix(1) = {{ ph_alpha_mix|default(0.7) }}
+  nmix_ph = {{ ph_nmix|default(4) }}
+  recover = .false.
+  epsil = .false.
+/

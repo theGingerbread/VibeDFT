@@ -1,0 +1,46 @@
+&CONTROL
+  calculation = 'scf'
+  outdir = './out_scf/'
+  prefix = '{{ qe.pw.control.prefix }}'
+  pseudo_dir = '{{ material.pseudo_dir }}'
+  tprnfor = .true.
+  tstress = .true.
+  verbosity = 'high'
+  etot_conv_thr = 1.0d-8
+  forc_conv_thr = 1.0d-10
+/
+
+&SYSTEM
+  ibrav = 0
+  nat = {{ material.atomic_positions | length }}
+  ntyp = {{ material.atomic_species | length }}
+  ecutwfc = {{ qe.pw.system.ecutwfc }}
+  ecutrho = {{ qe.pw.system.ecutrho }}
+  occupations = 'smearing'
+  smearing = 'gaussian'
+  degauss = 3.7d-3
+/
+
+&ELECTRONS
+  conv_thr = 1.0d-12
+  electron_maxstep = 200
+  mixing_beta = 4.0d-1
+/
+
+ATOMIC_SPECIES
+{% for el, spec in material.atomic_species.items() %}
+{{ el }}  {{ spec.mass }}  {{ spec.pseudo }}
+{%- endfor %}
+
+CELL_PARAMETERS (angstrom)
+{% for row in material.cell_parameters %}
+  {{ "%14.9f"|format(row[0]) }} {{ "%14.9f"|format(row[1]) }} {{ "%14.9f"|format(row[2]) }}
+{%- endfor %}
+
+ATOMIC_POSITIONS (crystal)
+{% for atom in material.atomic_positions %}
+{{ atom.element }}  {{ "%20.10f"|format(atom.pos[0]) }} {{ "%20.10f"|format(atom.pos[1]) }} {{ "%20.10f"|format(atom.pos[2]) }}
+{%- endfor %}
+
+K_POINTS (automatic)
+{{ common.kpoints.grid[0] }} {{ common.kpoints.grid[1] }} {{ common.kpoints.grid[2] }} 0 0 0

@@ -1,0 +1,6 @@
+&BANDS
+  prefix = '{{ qe.bands.prefix | default(qe.pw.control.prefix, true) }}'
+  outdir = '{{ qe.bands.source_outdir | default(qe.bands.outdir) | default(qe.pw.control.outdir) }}'
+  filband = '{{ qe.bands.filband | default('bands.dat') }}'
+  lsym = .{{ 'true' if qe.bands.lsym | default(true) else 'false' }}
+/

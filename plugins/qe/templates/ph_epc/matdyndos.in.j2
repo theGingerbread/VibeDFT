@@ -1,0 +1,6 @@
+&INPUT
+  flfrq = '{{ qe.matdyn.flfrq | default('freq.gp') }}'
+  flfrc = '{{ qe.matdyn.flfrc | default('fc') }}'
+  dos = .true.
+/
+40 40 40   ! uniform q-grid for phonon DOS

@@ -1,0 +1,33 @@
+&CONTROL
+  calculation = 'scf'
+  prefix = 'test'
+  outdir = './out_scf/'
+  pseudo_dir = '/path/to/pseudo'
+  tprnfor = .true.
+/
+&SYSTEM
+  ibrav = 0
+  nat = 3
+  ntyp = 2
+  ecutwfc = 60
+  ecutrho = 480
+  occupations = 'smearing'
+  smearing = 'gaussian'
+  degauss = 0.005
+/
+&ELECTRONS
+  conv_thr = 1.0d-12
+/
+ATOMIC_SPECIES
+  X  1.0  X.UPF
+  Y  2.0  Y.UPF
+ATOMIC_POSITIONS crystal
+  X  0.0  0.0  0.5
+  Y  0.667  0.333  0.565
+  Y  0.667  0.333  0.435
+K_POINTS automatic
+  12 12 1  0 0 0
+CELL_PARAMETERS angstrom
+  3.50  0.00  0.00
+  -1.75  3.03  0.00
+  0.00  0.00  40.00

@@ -1,0 +1,38 @@
+id: qe.rx.v1
+software: qe
+description: QE structure relaxation (relax or vc-relax for 2D materials).
+stages:
+  - id: rx
+    program: pw.x
+    template: templates/rx/relax.in.j2
+    description: Structure relaxation (vc-relax for variable-cell, relax for fixed-cell).
+templates:
+  - templates/rx/relax.in.j2
+parameters:
+  qe.pw.control.calculation: vc-relax
+uses:
+  - qe.pw.control.prefix
+  - qe.pw.control.calculation
+  - qe.pw.control.outdir
+  - qe.pw.control.pseudo_dir
+  - qe.pw.control.tprnfor
+  - qe.pw.control.tstress
+  - qe.pw.control.verbosity
+  - qe.pw.control.etot_conv_thr
+  - qe.pw.control.forc_conv_thr
+  - qe.pw.system.ibrav
+  - qe.pw.system.nat
+  - qe.pw.system.ntyp
+  - qe.pw.system.ecutwfc
+  - qe.pw.system.ecutrho
+  - qe.pw.system.occupations
+  - qe.pw.system.smearing
+  - qe.pw.system.degauss
+  - qe.pw.system.tot_charge
+  - qe.pw.system.assume_isolated
+  - qe.pw.system.cell_dofree
+  - qe.pw.system.input_dft
+  - qe.pw.electrons.conv_thr
+  - qe.pw.electrons.mixing_beta
+  - qe.pw.electrons.electron_maxstep
+  - common.kpoints.grid

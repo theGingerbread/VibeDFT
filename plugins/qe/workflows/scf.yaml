@@ -1,0 +1,37 @@
+id: qe.scf.v1
+software: qe
+description: QE self-consistent field calculation only. Outputs out_scf/prefix.save for downstream stages.
+stages:
+  - id: scf
+    program: pw.x
+    template: templates/scf_dos/scf.in.j2
+    description: Self-consistent field calculation (charge density).
+templates:
+  - templates/scf_dos/scf.in.j2
+uses:
+  - qe.pw.control.prefix
+  - qe.pw.control.calculation
+  - qe.pw.control.outdir
+  - qe.pw.control.pseudo_dir
+  - qe.pw.control.tprnfor
+  - qe.pw.control.tstress
+  - qe.pw.control.verbosity
+  - qe.pw.control.etot_conv_thr
+  - qe.pw.system.ibrav
+  - qe.pw.system.nat
+  - qe.pw.system.ntyp
+  - qe.pw.system.ecutwfc
+  - qe.pw.system.ecutrho
+  - qe.pw.system.occupations
+  - qe.pw.system.smearing
+  - qe.pw.system.degauss
+  - qe.pw.system.tot_charge
+  - qe.pw.electrons.conv_thr
+  - qe.pw.electrons.electron_maxstep
+  - qe.pw.electrons.mixing_beta
+  - common.kpoints.grid
+parameters:
+  qe.pw.control.calculation: scf
+  qe.pw.system.ecutwfc: 60
+  qe.pw.system.ecutrho: 480
+  common.kpoints.grid: [12, 12, 1]

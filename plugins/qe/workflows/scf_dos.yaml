@@ -1,0 +1,37 @@
+id: qe.scf_dos.v1
+software: qe
+description: QE SCF → NSCF(DOS) → DOS + optional NSCF(bands) → bands workflow.
+stages:
+  - id: scf
+    program: pw.x
+    template: templates/pw_scf_full.in.j2
+    description: Self-consistent field calculation (charge density).
+  - id: nscf_dos
+    program: pw.x
+    depends_on: [scf]
+    description: Non-SCF calculation on dense k-mesh for DOS.
+  - id: dos
+    program: dos.x
+    depends_on: [nscf_dos]
+    description: Density of states post-processing.
+  - id: nscf_bands
+    program: pw.x
+    depends_on: [scf]
+    optional: true
+    description: Non-SCF calculation along high-symmetry k-path for band structure.
+  - id: bands
+    program: bands.x
+    depends_on: [nscf_bands]
+    optional: true
+    description: Band structure post-processing.
+templates:
+  - templates/pw_scf_full.in.j2
+uses:
+  - qe.pw.control.prefix
+  - qe.pw.system.ecutwfc
+  - qe.pw.system.ecutrho
+  - common.kpoints.grid
+parameters:
+  qe.pw.system.ecutwfc: 60
+  qe.pw.system.ecutrho: 480
+  common.kpoints.grid: [12, 12, 1]

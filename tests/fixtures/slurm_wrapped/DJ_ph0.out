@@ -1,0 +1,15 @@
+[Talos] INFO: Job started at 2025-01-01 12:00:00
+[Talos] INFO: Working directory = /path/to/work
+[Talos] INFO: Cores = 56
+[Talos] INFO: Executable = /path/to/qe/bin/ph.x
+[Talos] INFO: Input = ph.in
+[Talos] INFO: Output = ph.out
+[Talos] DONE: ph.x completed normally.
+
+     Program PHONON v.7.2 starts on 01Jan2025 at 12:00:00
+
+     Representation #  1 mode #   1
+
+     PHONON       :    100.00s CPU    120.00s WALL
+
+     JOB DONE

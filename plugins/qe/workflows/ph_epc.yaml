@@ -1,0 +1,133 @@
+id: qe.ph_epc.v1
+software: qe
+description: |
+  QE PH/EPC/Tc chain: pwxall → pwx → phx0..N → q2r → matdynline → lambda → matdyndos → cleanup out/.
+
+  CRITICAL ORDERING: pwxall must run BEFORE pwx. Both share the same outdir/prefix.
+  If pwx runs first, pwxall overwrites the coarse save with dense k-mesh, causing
+  ph.x to run on dense mesh → extreme slowdown and disk overflow.
+
+  q2r.x MUST NOT contain la2F=.true. (causes crash).
+  matdyn.x for ordinary dispersion/DOS must NOT have la2F=.true.
+stages:
+  - id: pwxall
+    program: pw.x
+    description: Dense k-mesh SCF for lambda.x (e.g. 64×64×1 or 96×96×1). MUST RUN FIRST.
+    template: templates/ph_epc/pwxall.in.j2
+  - id: pwx
+    program: pw.x
+    depends_on: [pwxall]
+    description: Coarse k-mesh SCF for ph.x (e.g. 16×16×1). Overwrites pwxall save back to coarse.
+    template: templates/ph_epc/pwx.in.j2
+  - id: phx0
+    program: ph.x
+    depends_on: [pwx]
+    description: PH calculation for q-point 1 (generates dyn0 header). start_q=1, last_q=1.
+    template: templates/ph_epc/phx.in.j2
+  - id: phx1
+    program: ph.x
+    depends_on: [phx0]
+    description: PH calculation for q-points 2-4 (10-q-point split, 8x8x1 grid).
+    template: templates/ph_epc/phx1.in.j2
+  - id: phx2
+    program: ph.x
+    depends_on: [phx1]
+    description: PH calculation for q-points 5-7 (10-q-point split, 8x8x1 grid).
+    template: templates/ph_epc/phx2.in.j2
+  - id: phx3
+    program: ph.x
+    depends_on: [phx2]
+    description: PH calculation for q-points 8-10 (10-q-point split, 8x8x1 grid).
+    template: templates/ph_epc/phx3.in.j2
+  - id: q2r
+    program: q2r.x
+    depends_on: [phx1, phx2, phx3]
+    description: Fourier transform dyn* → real-space force constants (.fc). NO la2F.
+    template: templates/ph_epc/q2r.in.j2
+  - id: matdynline
+    program: matdyn.x
+    depends_on: [q2r]
+    description: Phonon dispersion along high-symmetry q-path. NO la2F.
+    template: templates/ph_epc/matdynline.in.j2
+  - id: lambda
+    program: lambda.x
+    depends_on: [phx1, phx2, phx3]
+    description: Eliashberg spectral function, λ(degauss), ω_log, Tc (McMillan-Allen-Dynes).
+    template: templates/ph_epc/lambdax.in.j2
+  - id: matdyndos
+    program: matdyn.x
+    depends_on: [q2r]
+    description: Phonon DOS on uniform q-grid. NO la2F.
+    template: templates/ph_epc/matdyndos.in.j2
+  - id: cleanup
+    depends_on: [matdynline, lambda, matdyndos]
+    manual: true
+    description: |
+      MANUAL: After confirming lambdax.out, lambda.dat, alpha2F.dat are non-empty:
+      rm -rf out/ *.save/ _ph0/
+templates:
+  - templates/ph_epc/pwxall.in.j2
+  - templates/ph_epc/pwx.in.j2
+  - templates/ph_epc/phx.in.j2
+  - templates/ph_epc/phx1.in.j2
+  - templates/ph_epc/phx2.in.j2
+  - templates/ph_epc/phx3.in.j2
+  - templates/ph_epc/q2r.in.j2
+  - templates/ph_epc/matdynline.in.j2
+  - templates/ph_epc/lambdax.in.j2
+  - templates/ph_epc/matdyndos.in.j2
+uses:
+  - qe.pw.control.prefix
+  - qe.pw.control.calculation
+  - qe.pw.control.outdir
+  - qe.pw.control.pseudo_dir
+  - qe.pw.control.verbosity
+  - qe.pw.system.ibrav
+  - qe.pw.system.nat
+  - qe.pw.system.ntyp
+  - qe.pw.system.ecutwfc
+  - qe.pw.system.ecutrho
+  - qe.pw.system.occupations
+  - qe.pw.system.smearing
+  - qe.pw.system.degauss
+  - qe.pw.system.tot_charge
+  - qe.pw.electrons.conv_thr
+  - qe.pw.electrons.electron_maxstep
+  - qe.pw.electrons.mixing_beta
+  - qe.ph.prefix
+  - qe.ph.outdir
+  - qe.ph.fildyn
+  - qe.ph.ldisp
+  - qe.ph.nq1
+  - qe.ph.nq2
+  - qe.ph.nq3
+  - qe.ph.start_q
+  - qe.ph.last_q
+  - qe.ph.electron_phonon
+  - qe.ph.el_ph_sigma
+  - qe.ph.el_ph_nsigma
+  - qe.ph.tr2_ph
+  - qe.q2r.fildyn
+  - qe.q2r.flfrc
+  - qe.q2r.zasr
+  - qe.matdyn.flfrq
+  - qe.matdyn.flfrc
+  - qe.matdyn.dos
+  - qe.matdyn.q_in_band_form
+  - qe.matdyn.q_in_cryst_coord
+  - qe.matdyn.la2F
+  - qe.lambda.mustar
+  - common.kpoints.grid
+parameters:
+  qe.pw.system.ecutwfc: 70
+  qe.pw.system.ecutrho: 560
+  common.kpoints.grid: [16, 16, 1]
+  qe.ph.ldisp: true
+  qe.ph.nq1: 8
+  qe.ph.nq2: 8
+  qe.ph.nq3: 1
+  qe.matdyn.la2F: false
+  qe.q2r.fildyn: dyn
+  qe.q2r.flfrc: fc
+  qe.matdyn.flfrq: freq.gp
+  qe.matdyn.flfrc: fc

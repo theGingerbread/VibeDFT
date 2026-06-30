@@ -1,0 +1,222 @@
+parameters:
+  # ── INPUTPH namelist ──
+  - id: qe.ph.prefix
+    software: qe
+    program: ph.x
+    namelist: INPUTPH
+    name: prefix
+    type: string
+    required: true
+    default: null
+    category: identity
+    ui:
+      label: Calculation prefix
+      level: basic
+      widget: text
+      help: Must match the pw.x prefix that generated the save directory.
+
+  - id: qe.ph.outdir
+    software: qe
+    program: ph.x
+    namelist: INPUTPH
+    name: outdir
+    type: string
+    required: true
+    default: ./out_scf/
+    category: io
+    ui:
+      label: Output directory
+      level: basic
+      widget: text
+
+  - id: qe.ph.fildyn
+    software: qe
+    program: ph.x
+    namelist: INPUTPH
+    name: fildyn
+    type: string
+    required: false
+    default: null
+    category: io
+    ui:
+      label: Dynamical matrix file prefix
+      level: basic
+      widget: text
+
+  - id: qe.ph.ldisp
+    software: qe
+    program: ph.x
+    namelist: INPUTPH
+    name: ldisp
+    type: boolean
+    required: true
+    default: true
+    category: job-type
+    ui:
+      label: Dispersion calculation
+      level: basic
+      widget: checkbox
+      help: Enable phonon dispersion calculation on a regular q-grid.
+
+  - id: qe.ph.nq1
+    software: qe
+    program: ph.x
+    namelist: INPUTPH
+    name: nq1
+    type: integer
+    required: true
+    default: 8
+    category: sampling
+    ui:
+      label: q-grid dimension 1
+      level: basic
+      widget: number
+      help: First dimension of the phonon q-point grid. 8×8×1 standard for 2D HfX2.
+
+  - id: qe.ph.nq2
+    software: qe
+    program: ph.x
+    namelist: INPUTPH
+    name: nq2
+    type: integer
+    required: true
+    default: 8
+    category: sampling
+    ui:
+      label: q-grid dimension 2
+      level: basic
+      widget: number
+
+  - id: qe.ph.nq3
+    software: qe
+    program: ph.x
+    namelist: INPUTPH
+    name: nq3
+    type: integer
+    required: true
+    default: 1
+    category: sampling
+    ui:
+      label: q-grid dimension 3
+      level: basic
+      widget: number
+      help: Always 1 for 2D materials.
+
+  - id: qe.ph.start_q
+    software: qe
+    program: ph.x
+    namelist: INPUTPH
+    name: start_q
+    type: integer
+    required: false
+    default: 1
+    category: sampling
+    ui:
+      label: Start q-index
+      level: advanced
+      widget: number
+      help: "For parallel splitting: phx0 does start_q=1,last_q=1 to generate dyn0 header."
+
+  - id: qe.ph.last_q
+    software: qe
+    program: ph.x
+    namelist: INPUTPH
+    name: last_q
+    type: integer
+    required: false
+    default: 1
+    category: sampling
+    ui:
+      label: Last q-index
+      level: advanced
+      widget: number
+      help: For parallel splitting. Read dyn0 to determine total irreducible q-points.
+
+  - id: qe.ph.electron_phonon
+    software: qe
+    program: ph.x
+    namelist: INPUTPH
+    name: electron_phonon
+    type: string
+    required: false
+    default: null
+    category: epc
+    range:
+      values: ['', interop, simple, scdft, dvscf, lambda, need_band, need_elph]
+    ui:
+      label: Electron-phonon coupling
+      level: advanced
+      widget: select
+      help: Enable epcoupling output for lambda.x. Use 'dvscf' for standard EPC calculations.
+
+  - id: qe.ph.el_ph_sigma
+    software: qe
+    program: ph.x
+    namelist: INPUTPH
+    name: el_ph_sigma
+    type: float
+    required: false
+    default: null
+    category: epc
+    ui:
+      label: EPC double-delta smearing (Ry)
+      level: advanced
+      widget: number
+      help: Gaussian smearing width for EPC double-delta integration.
+
+  - id: qe.ph.el_ph_nsigma
+    software: qe
+    program: ph.x
+    namelist: INPUTPH
+    name: el_ph_nsigma
+    type: integer
+    required: false
+    default: null
+    category: epc
+    ui:
+      label: EPC double-delta sigma count
+      level: advanced
+      widget: number
+      help: Number of sigma widths for EPC double-delta integration.
+
+  - id: qe.ph.tr2_ph
+    software: qe
+    program: ph.x
+    namelist: INPUTPH
+    name: tr2_ph
+    type: float
+    required: false
+    default: 1.0e-14
+    category: convergence
+    ui:
+      label: PH convergence threshold
+      level: advanced
+      widget: number
+
+  - id: qe.ph.epsil
+    software: qe
+    program: ph.x
+    namelist: INPUTPH
+    name: epsil
+    type: boolean
+    required: false
+    default: false
+    category: dielectric
+    ui:
+      label: Calculate dielectric constant
+      level: advanced
+      widget: checkbox
+
+  - id: qe.ph.trans
+    software: qe
+    program: ph.x
+    namelist: INPUTPH
+    name: trans
+    type: boolean
+    required: false
+    default: true
+    category: job-type
+    ui:
+      label: Calculate effective charges
+      level: advanced
+      widget: checkbox

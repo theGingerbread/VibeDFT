@@ -1,0 +1,15 @@
+&CONTROL
+  calculation = 'bands'
+  prefix      = 'hfcl2'
+/
+&SYSTEM
+  ibrav = 0
+  nat   = 3
+  ntyp  = 2
+  ecutwfc = 100
+  ecutrho = 700
+/
+ATOMIC_SPECIES
+Hf  178.490  Hf.rel-pbe-spn-rrkjus_psl.1.0.0.UPF
+Cl  35.450   Cl.rel-pbe-n-rrkjus_psl.1.0.0.UPF
+...

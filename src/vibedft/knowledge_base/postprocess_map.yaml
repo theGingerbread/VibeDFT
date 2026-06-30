@@ -1,0 +1,160 @@
+# VibeDFT — Task → Post-Processing Map
+#
+# Maps each task type to the expected output files and recommended
+# post-processing / plotting actions.  Used by the postprocess dispatcher
+# (Sprint 3) and for the "what to do next" suggestions in review mode.
+
+tasks:
+  scf:
+    label: "Self-Consistent Field"
+    required_outputs:
+      - scf.out
+    optional_outputs:
+      - "*.save/"
+    postprocess:
+      - extract_total_energy
+      - extract_fermi_energy
+      - check_scf_convergence
+      - plot_convergence_history
+    cli_command: "vibedft analyze scf <output/scf.out>"
+
+  nscf:
+    label: "Non-Self-Consistent Field"
+    required_outputs:
+      - nscf.out
+    depends_on: scf
+    postprocess:
+      - extract_band_energies
+    cli_command: "vibedft analyze scf <output/nscf.out>"
+
+  relax:
+    label: "Ionic Relaxation"
+    required_outputs:
+      - relax.out
+    optional_outputs:
+      - relaxed_structure.cif
+    postprocess:
+      - extract_final_structure
+      - plot_force_convergence
+      - export_final_cif
+    cli_command: "vibedft analyze structure <relax.out>"
+
+  vc-relax:
+    label: "Variable-Cell Relaxation"
+    required_outputs:
+      - relax.out
+    optional_outputs:
+      - relaxed_structure.cif
+    postprocess:
+      - extract_final_structure
+      - extract_final_cell
+      - plot_stress_convergence
+    cli_command: "vibedft analyze structure <relax.out>"
+
+  bands:
+    label: "Band Structure"
+    required_outputs:
+      - "*.bands"
+      - "*.bands.dat.gnu"
+    depends_on: scf
+    postprocess:
+      - plot_band
+      - compute_band_gap
+    cli_command: "vibedft analyze bands <output/HfBr2.bands>"
+
+  dos:
+    label: "Density of States"
+    required_outputs:
+      - "*.dos"
+    depends_on: nscf
+    postprocess:
+      - plot_dos
+      - compute_dos_at_ef
+    cli_command: "vibedft analyze dos <output/HfBr2.dos>"
+
+  pdos:
+    label: "Projected Density of States"
+    required_outputs:
+      - "*pdos_atm*"
+      - "*pdos_tot"
+    depends_on: nscf
+    postprocess:
+      - plot_pdos
+      - dominant_orbital_near_ef
+    cli_command: "vibedft analyze pdos <output/>"
+
+  ph_stability:
+    label: "Phonon Stability"
+    required_outputs:
+      - "*.dyn*"
+      - "*.freq.gp"
+    depends_on: scf
+    postprocess:
+      - plot_phonon
+      - check_imaginary_frequency
+      - qa_phonon_frequencies
+    cli_command: "vibedft analyze phonon --freq <output/*.freq.gp>"
+
+  ph_epc:
+    label: "Electron-Phonon Coupling (PH)"
+    required_outputs:
+      - "*.dyn*"
+      - elph.inp_lambda.*
+      - elph.gamma.*
+    depends_on: scf
+    postprocess:
+      - check_epc_convergence
+    notes: "This task generates input for lambda.x.  λ and Tc come from lambda_tc."
+
+  q2r:
+    label: "Fourier Transform (q2r)"
+    required_outputs:
+      - "*.fc"
+    depends_on: ph_stability  # or ph_epc
+    postprocess:
+      - check_fc_file_size
+    cli_command: "(no direct analysis — feeds into matdyn)"
+
+  matdyn_disp:
+    label: "Phonon Dispersion (matdyn)"
+    required_outputs:
+      - "*.freq.gp"
+    depends_on: q2r
+    postprocess:
+      - plot_phonon
+      - check_imaginary_frequency
+    cli_command: "vibedft analyze phonon --freq <output/*.freq.gp>"
+
+  matdyn_dos:
+    label: "Phonon DOS (matdyn)"
+    required_outputs:
+      - "*.phdos*"
+      - matdyn.dos
+    depends_on: q2r
+    postprocess:
+      - plot_phdos
+    cli_command: "(phDOS plotting)"
+
+  lambda_tc:
+    label: "Superconducting Tc (lambda.x)"
+    required_outputs:
+      - lambdax.out
+      - lambda.dat
+      - alpha2F.dat
+    depends_on: ph_epc
+    postprocess:
+      - compute_tc_overlap
+      - plot_tc_vs_degauss
+      - plot_a2f_lambda
+      - extract_lambda_max
+    cli_command: "vibedft analyze tc <ph64/lambdax.out> <ph96/lambdax.out>"
+
+  fs:
+    label: "Fermi Surface"
+    required_outputs:
+      - "*.bxsf"
+    depends_on: scf
+    postprocess:
+      - parse_bxsf
+      - plot_fermi_surface
+    cli_command: "vibedft analyze fs --bxsf <output/*.bxsf>"

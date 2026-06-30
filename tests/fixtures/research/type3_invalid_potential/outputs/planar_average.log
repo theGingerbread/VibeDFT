@@ -1,0 +1,6 @@
+Legacy Type-III HfBr2/TiSe2 planar average post-processing note.
+
+The electrostatic potential was assembled with fixed 600-line blocks from an
+old save directory rather than parsed grid metadata.  Vacuum plateau
+fluctuation reached 11.4 eV, but the report still quoted reported deltaV
+0.841 eV.

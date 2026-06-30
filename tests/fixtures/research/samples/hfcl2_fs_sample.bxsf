@@ -1,0 +1,14 @@
+BEGIN_INFO
+  Fermi Energy: -0.2500
+END_INFO
+BEGIN_BANDGRID_3D
+  1
+  2 2 1
+  0.0 0.0 0.0
+  1.0 0.0 0.0
+  0.0 1.0 0.0
+  0.0 0.0 1.0
+  BAND: 1
+  -0.80 -0.10
+  -0.40  0.20
+END_BANDGRID_3D

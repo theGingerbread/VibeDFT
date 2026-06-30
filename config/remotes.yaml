@@ -1,0 +1,56 @@
+# Public sample remote configuration.
+# Replace every host, user, root, and binary path with your own cluster setup.
+remotes:
+  workstation:
+    host: workstation.example.org
+    user: user
+    root: ~/work/dft
+    qe_bin_dir: /opt/qe/bin
+    intel_setvars: /opt/intel/oneapi/setvars.sh
+    iconfig: gcc-openmpi
+    preferred_for: [screening, local_debug]
+    notes: >
+      Example workstation profile for small test jobs.
+    constraints:
+      max_nodes: 1
+      max_ntasks: 32
+      max_concurrent: 1
+      partition: debug
+      memory: 128 GB
+      cpu: example
+
+  cluster-a:
+    host: cluster-a.example.org
+    user: user
+    root: ~/work/dft
+    qe_bin_dir: /opt/qe/bin
+    intel_setvars: /opt/intel/oneapi/setvars.sh
+    iconfig: oneapi
+    preferred_for: [phonon, epc, large_memory]
+    notes: >
+      Example large-memory cluster profile.
+    constraints:
+      max_nodes: 1
+      max_ntasks: 64
+      max_concurrent: 1
+      partition: debug
+      memory: 256 GB
+      cpu: example
+
+  cluster-b:
+    host: cluster-b.example.org
+    user: user
+    root: ~/work/dft
+    qe_bin_dir: /opt/qe/bin
+    intel_setvars: /opt/intel/oneapi/setvars.sh
+    iconfig: oneapi
+    preferred_for: [heterostructure, production, vasp]
+    notes: >
+      Example production cluster profile.
+    constraints:
+      max_nodes: 1
+      max_ntasks: 64
+      max_concurrent: 2
+      partition: debug
+      memory: 256 GB
+      cpu: example

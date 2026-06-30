@@ -1,0 +1,27 @@
+&inputepw
+  prefix      = 'test'
+  outdir      = './out/'
+  elph        = .true.
+  epbwrite    = .true.
+  epbread     = .false.
+  kmaps       = .true.
+  etf_mem     = 0
+  nk1         = 6
+  nk2         = 6
+  nk3         = 1
+  nq1         = 6
+  nq2         = 6
+  nq3         = 1
+  degaussw    = 0.04
+  fsthick     = 0.4
+  eptemp      = 300
+  muc         = 0.1
+  nsmear      = 1
+  delta_smear = 0.04
+  wannierize  = .true.
+  num_wann    = 9
+  dis_win_min = -5.0
+  dis_win_max = 15.0
+  dis_froz_min = 0.0
+  dis_froz_max = 8.0
+/

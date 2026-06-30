@@ -1,0 +1,396 @@
+parameters:
+  # ── CONTROL namelist ──
+  - id: qe.pw.control.prefix
+    software: qe
+    program: pw.x
+    namelist: CONTROL
+    name: prefix
+    type: string
+    required: true
+    default: null
+    category: identity
+    ui:
+      label: Calculation prefix
+      level: basic
+      widget: text
+      help: Shared prefix for QE output and restart files. Must be consistent across all stages of a workflow.
+
+  - id: qe.pw.control.calculation
+    software: qe
+    program: pw.x
+    namelist: CONTROL
+    name: calculation
+    type: string
+    required: true
+    default: scf
+    category: job-type
+    range:
+      values: [scf, nscf, relax, vc-relax, bands, md, vc-md]
+    ui:
+      label: Calculation type
+      level: basic
+      widget: select
+      help: "QE calculation mode. 'vc-relax' for variable-cell relaxation."
+
+  - id: qe.pw.control.outdir
+    software: qe
+    program: pw.x
+    namelist: CONTROL
+    name: outdir
+    type: string
+    required: true
+    default: ./out_scf/
+    category: io
+    ui:
+      label: Output directory
+      level: basic
+      widget: text
+      help: Directory for wavefunction and restart files. Must be consistent across dependent stages.
+
+  - id: qe.pw.control.pseudo_dir
+    software: qe
+    program: pw.x
+    namelist: CONTROL
+    name: pseudo_dir
+    type: string
+    required: true
+    default: null
+    category: io
+    ui:
+      label: Pseudopotential directory
+      level: basic
+      widget: text
+      help: Path to pseudopotential files.
+
+  - id: qe.pw.control.tprnfor
+    software: qe
+    program: pw.x
+    namelist: CONTROL
+    name: tprnfor
+    type: boolean
+    required: false
+    default: true
+    category: output
+    ui:
+      label: Print forces
+      level: basic
+      widget: checkbox
+      help: If true, forces are printed at each SCF step.
+
+  - id: qe.pw.control.tstress
+    software: qe
+    program: pw.x
+    namelist: CONTROL
+    name: tstress
+    type: boolean
+    required: false
+    default: true
+    category: output
+    ui:
+      label: Print stress
+      level: basic
+      widget: checkbox
+      help: If true, stress tensor is computed and printed.
+
+  - id: qe.pw.control.verbosity
+    software: qe
+    program: pw.x
+    namelist: CONTROL
+    name: verbosity
+    type: string
+    required: false
+    default: high
+    category: output
+    range:
+      values: [low, medium, high]
+    ui:
+      label: Output verbosity
+      level: advanced
+      widget: select
+
+  - id: qe.pw.control.etot_conv_thr
+    software: qe
+    program: pw.x
+    namelist: CONTROL
+    name: etot_conv_thr
+    type: float
+    required: false
+    default: 1.0e-8
+    category: convergence
+    ui:
+      label: Total energy convergence threshold (Ry)
+      level: advanced
+      widget: number
+
+  - id: qe.pw.control.forc_conv_thr
+    software: qe
+    program: pw.x
+    namelist: CONTROL
+    name: forc_conv_thr
+    type: float
+    required: false
+    default: 1.0e-10
+    category: convergence
+    ui:
+      label: Force convergence threshold (Ry/Bohr)
+      level: advanced
+      widget: number
+
+  # ── SYSTEM namelist ──
+  - id: qe.pw.system.ibrav
+    software: qe
+    program: pw.x
+    namelist: SYSTEM
+    name: ibrav
+    type: integer
+    required: false
+    default: 0
+    category: cell
+    ui:
+      label: Bravais lattice index
+      level: basic
+      widget: number
+      help: 0 = free-format CELL_PARAMETERS (recommended for low-symmetry/slab calculations).
+
+  - id: qe.pw.system.nat
+    software: qe
+    program: pw.x
+    namelist: SYSTEM
+    name: nat
+    type: integer
+    required: true
+    default: null
+    category: cell
+    ui:
+      label: Number of atoms
+      level: basic
+      widget: number
+
+  - id: qe.pw.system.ntyp
+    software: qe
+    program: pw.x
+    namelist: SYSTEM
+    name: ntyp
+    type: integer
+    required: true
+    default: null
+    category: cell
+    ui:
+      label: Number of atom types
+      level: basic
+      widget: number
+
+  - id: qe.pw.system.ecutwfc
+    software: qe
+    program: pw.x
+    namelist: SYSTEM
+    name: ecutwfc
+    type: float
+    unit: Ry
+    required: true
+    default: 60
+    category: basis
+    range:
+      min: 10
+      max: 300
+    ui:
+      label: Wavefunction cutoff
+      level: basic
+      widget: number
+      help: Plane-wave kinetic energy cutoff.
+    validation:
+      - positive
+      - depends_on_pseudopotential
+
+  - id: qe.pw.system.ecutrho
+    software: qe
+    program: pw.x
+    namelist: SYSTEM
+    name: ecutrho
+    type: float
+    unit: Ry
+    required: true
+    default: 480
+    category: basis
+    range:
+      min: 40
+      max: 2400
+    ui:
+      label: Charge-density cutoff
+      level: basic
+      widget: number
+      help: Charge-density cutoff, commonly 4×ecutwfc for norm-conserving, 8× for ultrasoft/PAW.
+
+  - id: qe.pw.system.input_dft
+    software: qe
+    program: pw.x
+    namelist: SYSTEM
+    name: input_dft
+    type: string
+    required: false
+    default: null
+    category: functional
+    ui:
+      label: DFT functional override
+      level: advanced
+      widget: text
+      help: "Override pseudopotential functional. Use 'vdw-DF3-opt1' for intercalation vdW calculations."
+
+  - id: qe.pw.system.occupations
+    software: qe
+    program: pw.x
+    namelist: SYSTEM
+    name: occupations
+    type: string
+    required: false
+    default: smearing
+    category: electronic
+    range:
+      values: [smearing, tetrahedra, tetrahedra_opt, fixed, from_input]
+    ui:
+      label: Occupation scheme
+      level: basic
+      widget: select
+      help: "Use 'smearing' for metals/doped systems; 'fixed' for insulators."
+
+  - id: qe.pw.system.smearing
+    software: qe
+    program: pw.x
+    namelist: SYSTEM
+    name: smearing
+    type: string
+    required: false
+    default: gaussian
+    category: electronic
+    range:
+      values: [gaussian, methfessel-paxton, marzari-vanderbilt, fermi-dirac, cold, mp, mv]
+    ui:
+      label: Smearing type
+      level: basic
+      widget: select
+
+  - id: qe.pw.system.degauss
+    software: qe
+    program: pw.x
+    namelist: SYSTEM
+    name: degauss
+    type: float
+    unit: Ry
+    required: false
+    default: 3.7e-3
+    category: electronic
+    ui:
+      label: Smearing width
+      level: basic
+      widget: number
+      help: "Gaussian smearing width in Ry. Typical values: 0.001-0.02 Ry."
+
+  - id: qe.pw.system.tot_charge
+    software: qe
+    program: pw.x
+    namelist: SYSTEM
+    name: tot_charge
+    type: float
+    required: false
+    default: 0.0
+    category: electronic
+    ui:
+      label: Total charge
+      level: advanced
+      widget: number
+      help: Non-zero for charged-cell doping simulations (e.g., -0.05 for electron doping).
+
+  - id: qe.pw.system.assume_isolated
+    software: qe
+    program: pw.x
+    namelist: SYSTEM
+    name: assume_isolated
+    type: string
+    required: false
+    default: null
+    category: cell
+    range:
+      values: ['', 2D, esm, bc1, bc2, bc3, none]
+    ui:
+      label: Isolated system correction
+      level: advanced
+      widget: select
+      help: "'2D' for slab calculations with Coulomb cutoff along z."
+
+  - id: qe.pw.system.cell_dofree
+    software: qe
+    program: pw.x
+    namelist: SYSTEM
+    name: cell_dofree
+    type: string
+    required: false
+    default: null
+    category: cell
+    range:
+      values: ['', all, ibrav, x, y, z, xy, xz, yz, xyz, 2Dxy, 2Dshape, epitaxial_ab, epitaxial_ac, epitaxial_bc]
+    ui:
+      label: Cell DOF for vc-relax
+      level: advanced
+      widget: select
+      help: "'2Dxy' for 2D vc-relax with fixed z-axis."
+
+  # ── ELECTRONS namelist ──
+  - id: qe.pw.electrons.conv_thr
+    software: qe
+    program: pw.x
+    namelist: ELECTRONS
+    name: conv_thr
+    type: float
+    required: false
+    default: 1.0e-12
+    category: convergence
+    ui:
+      label: SCF convergence threshold (Ry)
+      level: advanced
+      widget: number
+
+  - id: qe.pw.electrons.electron_maxstep
+    software: qe
+    program: pw.x
+    namelist: ELECTRONS
+    name: electron_maxstep
+    type: integer
+    required: false
+    default: 200
+    category: convergence
+    ui:
+      label: Max SCF iterations
+      level: advanced
+      widget: number
+
+  - id: qe.pw.electrons.mixing_beta
+    software: qe
+    program: pw.x
+    namelist: ELECTRONS
+    name: mixing_beta
+    type: float
+    required: false
+    default: 0.4
+    category: mixing
+    range:
+      min: 0.01
+      max: 0.9
+    ui:
+      label: Mixing beta
+      level: advanced
+      widget: number
+      help: Charge-density mixing fraction. Lower values improve stability.
+
+  - id: common.kpoints.grid
+    software: common
+    program: kpoints
+    name: grid
+    type: integer_triplet
+    required: true
+    default: [12, 12, 1]
+    category: sampling
+    ui:
+      label: K-point grid
+      level: basic
+      widget: triplet
+      help: Monkhorst-Pack sampling grid.

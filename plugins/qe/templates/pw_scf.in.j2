@@ -1,0 +1,10 @@
+&CONTROL
+  calculation = 'scf'
+  prefix = '{{ qe.pw.control.prefix }}'
+/
+&SYSTEM
+  ecutwfc = {{ qe.pw.system.ecutwfc }}
+  ecutrho = {{ qe.pw.system.ecutrho }}
+/
+K_POINTS automatic
+{{ common.kpoints.grid[0] }} {{ common.kpoints.grid[1] }} {{ common.kpoints.grid[2] }} 0 0 0

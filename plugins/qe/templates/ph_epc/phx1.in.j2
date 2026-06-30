@@ -1,0 +1,24 @@
+&INPUTPH
+  prefix = '{{ qe.ph.prefix | default(qe.pw.control.prefix, true) }}'
+  outdir = '{{ qe.ph.outdir | default(qe.pw.control.outdir) }}'
+  fildyn = '{{ qe.ph.fildyn | default('dyn', true) }}'
+  ldisp = .{{ 'true' if qe.ph.ldisp | default(true) else 'false' }}
+  nq1 = {{ qe.ph.nq1 | default(8) }}
+  nq2 = {{ qe.ph.nq2 | default(8) }}
+  nq3 = {{ qe.ph.nq3 | default(1) }}
+  start_q = 2
+5
+  last_q = 4
+7
+{% if qe.ph.electron_phonon and qe.ph.electron_phonon != '' %}
+  electron_phonon = '{{ qe.ph.electron_phonon }}'
+{% endif %}
+{% if qe.ph.el_ph_sigma is defined and qe.ph.el_ph_sigma is not none %}
+  el_ph_sigma = {{ qe.ph.el_ph_sigma }}
+{% endif %}
+{% if qe.ph.el_ph_nsigma is defined and qe.ph.el_ph_nsigma is not none %}
+  el_ph_nsigma = {{ qe.ph.el_ph_nsigma }}
+{% endif %}
+  tr2_ph = {{ qe.ph.tr2_ph | default('1.0d-14') }}
+  trans = .{{ 'true' if qe.ph.trans | default(true) else 'false' }}
+/

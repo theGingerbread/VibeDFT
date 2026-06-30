@@ -1,0 +1,48 @@
+{# pw_scf.in.j2 — SCF with parameterized structure #}
+&CONTROL
+  calculation = 'scf'
+  outdir = './out_scf/'
+  prefix = '{{ stage_prefix }}'
+  pseudo_dir = '{{ pseudo_dir }}'
+  tprnfor = .true.
+  tstress = .true.
+  verbosity = 'high'
+{% if disk_io %}
+  disk_io = '{{ disk_io }}'
+{% endif %}
+/
+&SYSTEM
+  ibrav = 0
+  nat = {{ nat }}
+  ntyp = {{ ntyp }}
+  ecutwfc = {{ ecutwfc }}
+  ecutrho = {{ ecutrho }}
+{% if input_dft %}
+  input_dft = '{{ input_dft }}'
+{% endif %}
+{% if assume_isolated %}
+  assume_isolated = '{{ assume_isolated }}'
+{% endif %}
+{% if force_symmorphic %}
+  force_symmorphic = .true.
+{% endif %}
+  occupations = '{{ occupations }}'
+  smearing = '{{ smearing }}'
+  degauss = {{ degauss }}
+{% if tot_charge and tot_charge != 0 %}
+  tot_charge = {{ tot_charge }}
+{% endif %}
+/
+&ELECTRONS
+  conv_thr = {{ conv_thr }}
+  electron_maxstep = 200
+  mixing_beta = {{ mixing_beta }}
+/
+ATOMIC_SPECIES
+{{ atomic_species }}
+ATOMIC_POSITIONS crystal
+{{ atomic_positions }}
+K_POINTS automatic
+  {{ k_grid[0] }} {{ k_grid[1] }} {{ k_grid[2] }} 0 0 0
+CELL_PARAMETERS angstrom
+  {{ cell_parameters }}

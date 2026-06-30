@@ -1,0 +1,23 @@
+id: qe.projwfc.v1
+software: qe
+description: |
+  QE projected density of states (projwfc.x).
+  Reads NSCF wavefunctions. Depends on: qe.nscf_uniform.v1.
+stages:
+  - id: projwfc
+    program: projwfc.x
+    template: templates/scf_dos/projwfc.in.j2
+    description: Projected DOS (atom/orbital-resolved).
+templates:
+  - templates/scf_dos/projwfc.in.j2
+uses:
+  - qe.pw.control.prefix
+  - qe.pw.control.outdir
+  - qe.projwfc.prefix
+  - qe.projwfc.outdir
+  - qe.projwfc.DeltaE
+  - qe.projwfc.ngauss
+  - qe.projwfc.degauss
+  - qe.projwfc.source_outdir
+parameters:
+  qe.projwfc.source_outdir: ../03_nscf_uniform/out_nscf/
