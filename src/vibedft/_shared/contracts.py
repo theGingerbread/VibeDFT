@@ -1,5 +1,3 @@
-"""Calculator-neutral result contracts used by the v2 platform."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -19,6 +17,11 @@ class Evidence:
     value: Any
     interpretation: str
     line_number: int | None = None
+    line_start: int | None = None
+    line_end: int | None = None
+    artifact: str | None = None
+    section: str | None = None
+    evidence_id: str | None = None
 
 
 @dataclass(frozen=True)
@@ -46,6 +49,28 @@ class Diagnostics:
     notes: list[str] = field(default_factory=list)
     evidence: list[Evidence] = field(default_factory=list)
     metrics: dict[str, Any] = field(default_factory=dict)
+    parser: dict[str, Any] = field(default_factory=dict)
+    qe_messages: dict[str, Any] = field(default_factory=dict)
+    numerical_risk: dict[str, Any] = field(default_factory=dict)
+    workflow_risk: dict[str, Any] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class DownstreamReadiness:
+    """Downstream readiness record in a deterministic schema."""
+
+    task: str
+    allowed: bool
+    reason: str | None = None
+    evidence_refs: list[str] = field(default_factory=list)
+
+
+@dataclass(frozen=True)
+class Readiness:
+    """Task readiness with explicit downstream structure."""
+
+    downstream: dict[str, DownstreamReadiness] = field(default_factory=dict)
+    summary: str | None = None
 
 
 @dataclass(frozen=True)
@@ -55,13 +80,14 @@ class CleanedResult:
     calculator: str
     task: str
     status: CleanedStatus = "running"
+    review: ReviewResult | None = None
     source_files: list[str] = field(default_factory=list)
     provenance: Provenance = field(default_factory=Provenance)
     inputs: dict[str, Any] = field(default_factory=dict)
     outputs: dict[str, Any] = field(default_factory=dict)
     observables: dict[str, Any] = field(default_factory=dict)
     diagnostics: Diagnostics = field(default_factory=Diagnostics)
-    readiness: dict[str, bool] = field(default_factory=dict)
+    readiness: Readiness = field(default_factory=Readiness)
     warnings: list[str] = field(default_factory=list)
     next_actions: list[str] = field(default_factory=list)
 
@@ -75,6 +101,15 @@ class CleanedResult:
         if status not in {"pass", "warn", "block", "failed", "running", "no_data"}:
             raise ValueError(f"Unsupported cleaned status: {self.status}")
         object.__setattr__(self, "status", status)
+
+        readiness = self.readiness
+        if isinstance(readiness, dict):
+            downstream = {
+                str(task): DownstreamReadiness(task=str(task), allowed=bool(allowed))
+                for task, allowed in readiness.items()
+                if isinstance(task, str)
+            }
+            object.__setattr__(self, "readiness", Readiness(downstream=downstream))
 
         source_files = list(self.source_files or [])
         if self.source_artifacts:

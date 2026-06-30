@@ -53,8 +53,12 @@ def test_clean_scf_output_block_and_text_path(tmp_path: Path) -> None:
 
     assert result.status == "block"
     assert result.source_files == ["scf.out"]
-    assert result.readiness["job_done"] is False
-    assert result.readiness["converged"] is False
+    assert result.readiness.summary == "SCF not finished."
+    assert result.readiness.downstream["relax"].allowed is False
+    assert result.readiness.downstream["phonon"].allowed is False
+
+    assert result.review is not None
+    assert result.review.status == "BLOCK"
 
 
 def test_clean_scf_output_is_json_serializable() -> None:
@@ -67,3 +71,5 @@ def test_clean_scf_output_is_json_serializable() -> None:
     assert data["calculator"] == "qe"
     assert "outputs" in data
     assert data["outputs"]["final_total_energy_ry"] is not None
+    assert data["review"]["status"] == "PASS"
+    assert data["readiness"]["downstream"]["relax"]["allowed"] is True

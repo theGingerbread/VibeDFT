@@ -63,6 +63,8 @@ def test_qe_scf_review_cli_pass(tmp_path: Path) -> None:
     assert payload["result"]["status"] == "pass"
     assert payload["result"]["task"] == "scf"
     assert payload["result"]["outputs"]["job_done"] is True
+    assert payload["result"]["review"]["status"] == "PASS"
+    assert payload["result"]["readiness"]["downstream"]["relax"]["allowed"] is True
 
 
 def test_qe_scf_review_cli_warn(tmp_path: Path) -> None:
@@ -84,6 +86,8 @@ def test_qe_scf_review_cli_block_and_fail_on_block(tmp_path: Path) -> None:
     payload = json.loads(payload_text)
     assert payload["ok"] is True
     assert payload["result"]["status"] == "block"
+    assert payload["result"]["review"]["status"] == "BLOCK"
+    assert payload["result"]["readiness"]["downstream"]["phonon"]["allowed"] is False
 
     failure_output = _run_cli(
         ["qe", "scf", "review", "--fail-on-block", str(output_file)],
