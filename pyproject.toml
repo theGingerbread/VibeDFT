@@ -5,8 +5,8 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "vibedft"
 version = "0.1.0"
-description = "ASE-backed 2D materials superconductivity workflow system — parser, validator, physics analyzer, report generator, and local workbench."
-keywords = ["dft", "quantum-espresso", "superconductivity", "2d-materials", "workflow", "ase"]
+description = "QE-first agent-facing DFT workflow toolkit for deterministic execution, output monitoring, cleaned-result normalization, and calculator-neutral analysis."
+keywords = ["dft", "quantum-espresso", "workflow", "agent-tools", "output-parsing", "materials-science"]
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
@@ -46,7 +46,7 @@ Homepage = "https://github.com/theGingerbread/VibeDFT"
 Repository = "https://github.com/theGingerbread/VibeDFT.git"
 
 [project.scripts]
-vibedft = "vibedft.cli:main"
+vibedft = "vibedft.main.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

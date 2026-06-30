@@ -1,2 +1,3 @@
-"""Deprecated — import from ``vibedft.cli.main`` instead."""
-from vibedft.cli.main import main  # noqa: F401
+"""Legacy compatibility wrapper for the v2 CLI entrypoint."""
+
+from vibedft.main.cli import main  # noqa: F401
