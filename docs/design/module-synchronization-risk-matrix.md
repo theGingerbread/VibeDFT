@@ -386,7 +386,56 @@ monitor failed 与 review block 未区分。
 
 ---
 
-## 13. 风险闭环（执行建议）
+## 13. PR2.9 合同稳定性冻结未同步导致的契约漂移
+
+### 风险描述
+
+PR2.9 的契约冻结已落地代码，但文档与 PR 执行如果不统一会导致：
+下游扩展再次从 parsed-output 推导 policy，或在 transport 中混入科学逻辑。
+
+### 当前信号
+
+- `observability` 与 `analysis` 的设计文档尚未全部绑定六条冻结规则。
+- `architecture` 与 `command-registry` 的执行顺序未持续引用 PR2.9。
+- `v2-pr-roadmap` 中未显式承接 contract stability。
+
+### 危害
+
+- PR3/后续新增任务可能重建科学策略入口，绕过 `CleanedResult.review/readiness`。
+- `main` 与 `analysis` 接口返回字段不一致。
+- 下游 agent 根据不同入口得到冲突的 pass/warn/block。
+
+### 架构规则
+
+- PR2.9 的六条规则为硬约束，任何 task 或命令扩展都必须以该规则为前置。
+- `main/`/`observability` 只消费 `CleanedResult` 聚合，不直接读 parser 字段做 gate。
+- `CleanedResult.review` 与 `Readiness` 更新必须同步到文档与风险矩阵。
+
+### 测试方式
+
+- `tests/qe/test_observability_from_cleaned_results.py` 作为 contract 入口测试。
+- `tests/main/test_response_envelope.py` 验证 transport 与 payload 解耦。
+- `tests/main/test_command_registry.py` 防止命令路径漂移。
+
+### Schema Enforcement
+
+- `CleanedResult.readiness` 按 `Readiness` 类型序列化，禁止 free-dict。
+- `ReviewResult` 需在 `CleanedResult.review` 存在且可反序列化。
+
+### 文档 Enforcement
+
+- `docs/design/v2-contract-stability.md` 为主入口，所有 PR2.9 相关修改需回连。
+- 任一 task 合同扩展必须更新至少一份同步文档与 risk matrix。
+
+### PR checklist
+
+- PR 说明必须列出受影响规则的条目。
+- 若命令层涉及科学字段，必须有对应可追溯文档引用。
+- 遗留风险必须入 `human-decisions.md`。
+
+---
+
+## 14. 风险闭环（执行建议）
 
 每个风险进入 PR 前需要：
 
@@ -397,7 +446,7 @@ monitor failed 与 review block 未区分。
 
 ---
 
-## 14. PR 审核清单
+## 15. PR 审核清单
 
 - README 与行为同步。
 - status 映射一致。

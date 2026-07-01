@@ -9,7 +9,7 @@
 - 调用 handler。
 - 统一 JSON envelope。
 
-当前 `src/vibedft/main/cli.py` 已支持 `qe scf review`，但仍为硬编码路径。
+当前 `src/vibedft/main/cli.py` 已通过 `main.commands` registry 支持 `qe scf review`，不再使用硬编码分发。
 
 统一术语：
 
@@ -151,9 +151,31 @@ supports_fail_on_block: true
 - 不允许命令散落在 if/else 字符串匹配。
 - 测试应覆盖命令发现和 handler 合同。
 
+## 9. PR2.9 合同稳定性边界（与本阶段一致）
+
+PR2.9 要求 command registry 与可运行任务完全分离：  
+
+- registry 只能做 **命令寻址 + 参数接收 + 输出封装**。  
+- scientific policy 只来自 task 的 `ReviewResult` 与 `CleanedResult.readiness`。  
+- observability/decision logic 不能在 registry 层重新实现。  
+- handler 必须只调用 task 层公开 API（例如 `clean_scf_text`）并返回标准 `CommandExecution`。  
+
+反模式明确禁止：
+
+- `qe.scf.review` handler 在 registry 内部硬写 SCF 下游规则。  
+- `result` 字段不包含 `CleanedResult`。  
+- 同一命令在 registry 与 legacy 路径维护两套策略。  
+- 以 command id 命名替代任务版本化边界（必须保持 `qe.scf.review` 等明确定义）。  
+
+与 v2 contract 的绑定：
+
+- `result` 为 `CleanedResult` 时，`ok` 代表 transport 成功；科学成功由 `result.review.status` + `result.status` 表达。  
+- 任何新命令注册时必须先检查其 `review/clean` 是否有 typed downstream。  
+- PR2.9 之后 registry 改动只允许影响命令元数据与 transport，不允许变更科学判断语义。
+
 ---
 
-## 9. 可执行示例（建议命令矩阵）
+## 10. 可执行示例（建议命令矩阵）
 
 - `qe scf review`
 - `qe relax review`（未来）
@@ -165,7 +187,7 @@ supports_fail_on_block: true
 
 ---
 
-## 10. 反模式清单
+## 11. 反模式清单
 
 - handler 直接 `print(json.dumps(...))`。
 - 每个命令各自自定义错误结构。

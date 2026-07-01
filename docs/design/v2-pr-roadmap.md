@@ -8,6 +8,10 @@ VibeDFT v2 当前基线已具备 SCF 主链路：
 - PR2：`qe/scf schemas/review/clean`
 - PR2.5：`vibedft qe scf review` CLI JSON 闭环
 - PR2.5.1：`--output` 文件导出
+- PR2.7：shared contract hardening 已完成
+- PR2.8：command registry + envelope 已完成
+- PR2.8.1：observability contract align 已完成
+- PR2.9：contract stability documentation 已完成
 
 这意味着本轮可执行的是“从闭环能力到任务扩展”的工程，不是“新功能补丁”。
 
@@ -119,6 +123,50 @@ VibeDFT v2 当前基线已具备 SCF 主链路：
 
 - 在 CLI 里写科学判断逻辑；
 - 不经过 handler 的直接调用路径。
+
+---
+
+## 3.5 PR2.9：contract stability documentation（contract 稳定性文档）
+
+### 目标
+
+将 PR2.7/PR2.8/PR2.8.1 的结果收敛为一份可执行合同文档，并在架构主文档中固定约束。
+
+### 范围
+
+- 新增 `docs/design/v2-contract-stability.md`，定义六条冻结规则。  
+- 更新 `docs/design/architecture.md`，加入 contract stability 条目与执行边界。  
+- 更新 `docs/design/command-registry.md`，约束 transport 与 policy 的边界。  
+- 更新 `docs/design/module-synchronization-risk-matrix.md`，加入 PR2.9 contract drift 风险。  
+- 更新 `docs/design/v2-pr-roadmap.md`，将 PR2.9 作为 PR3 的前置门槛。
+
+### 文件
+
+- `docs/design/v2-contract-stability.md`（新增）
+- `docs/design/architecture.md`
+- `docs/design/command-registry.md`
+- `docs/design/module-synchronization-risk-matrix.md`
+- `docs/design/v2-pr-roadmap.md`
+
+### 测试
+
+- `tests/main/test_cli_qe_scf_review.py`（CLI 行为保持不变）
+- `tests/main/test_command_registry.py`（命令发现不变）
+- `tests/main/test_response_envelope.py`（envelope 形态不变）
+- `tests/_shared/test_contracts.py`（typed 合同不变）
+- `tests/qe/test_observability_from_cleaned_results.py`（observability 输入契约不变）
+
+### 完成标准
+
+- 六条冻结规则在文档体系内可检索、可引用。  
+- 合同不引入 parsed-output policy 重算。  
+- 下一步 PR3 不再以实验性 contract 讨论为前提即可启动。
+
+### 禁止包含
+
+- 重写 `SCF`、`relax`、`phonon` 科学逻辑。  
+- 引入 MCP/HTTP/LSP 层实现。  
+- 改变现有命令输出语义。  
 
 ---
 
@@ -369,7 +417,7 @@ VibeDFT v2 当前基线已具备 SCF 主链路：
 
 按风险最小原则推荐顺序：
 
-1. PR2.6 -> PR2.7 -> PR2.8（合同与治理优先）
+1. PR2.6 -> PR2.7 -> PR2.8 -> PR2.9（合同与治理优先）
 2. PR3 -> PR3.5（几何任务闭环）
 3. PR4 -> PR6 -> PR5（电子结构链路）
 4. PR7（后处理）
@@ -406,4 +454,3 @@ VibeDFT v2 当前基线已具备 SCF 主链路：
 8. 下一步依赖
 
 本路线图可直接作为下轮 PR 评审模板。若偏离顺序，需在 PR 说明中说明原因与风险。
-
