@@ -341,19 +341,25 @@ VibeDFT v2 当前基线已具备 SCF 主链路：
 ### 目标
 
 创建拆分目录和任务 stage 框架（不要求一次实现全解析）。
+PR9.1 已在 `src/vibedft/calculator/qe/phonon/stages.py` 建成声明式 scaffold，
+提供 `phonon_gamma / phonon_qgrid / phonon_dos / dielectric / born` 的任务元数据和
+下游约束边界，作为 PR9.2+ 的输入表。
 
 ### 文件
 
-- `src/vibedft/calculator/qe/phonon_gamma/...`
-- `src/vibedft/calculator/qe/phonon_qgrid/...`
-- `src/vibedft/calculator/qe/phonon_dos/...`
-- `src/vibedft/calculator/qe/dielectric/...`
-- `src/vibedft/calculator/qe/phonon_debug/...`
+- `src/vibedft/calculator/qe/phonon/stages.py`
+- `src/vibedft/calculator/qe/phonon/__init__.py`
+- `tests/qe/phonon/test_phonon_split_stages.py`
+- `tests/qe/phonon/test_phonon_split_contract.py`
+- `tests/qe/phonon`
+- `docs/design/phonon-task-split.md`
 
 ### 完成标准
 
-- 文档到目录映射完成；
-- 各 task 的 `schemas.py` 与 `review.py` 已有最小骨架。
+- 5 个子任务声明式定义完成；
+- 每个 task 的下游 `epc`、`tc` 默认阻断；
+- `vibedft.calculator.qe.phonon` 保持原有 parse/monitor 导出；
+- 单元测试覆盖任务列表、qualified 名称、元数据、阻断约束与校验器。
 
 ---
 

@@ -1,5 +1,17 @@
 # Phonon task split 设计
 
+## 0. PR9.1 状态（脚手架）
+
+本轮完成 `PR9.1 phonon task split scaffolds`，仅建立声明式任务分解元数据：
+
+- 新增 `phonon_gamma` / `phonon_qgrid` / `phonon_dos` / `dielectric` / `born`
+- 每个子任务仅包含 stage metadata（输入、输出、命令、下游边界）
+- 所有子任务 `implementation_status = "scaffold"`
+- **不改 `parse.py` / `review.py` / `clean.py` / CLI**
+- 不默认放行：`epc`、`tc`
+
+> 本阶段不实现 full review/clean/CLI；仅为后续 PR9.2+ 的任务边界提供稳定入口。
+
 ## 1. 设计前提与核心原则
 
 VibeDFT 的 `phonon` 不应作为单一任务存在，核心原因不是工程风格偏好，而是科学链路和交付风险控制需要。
@@ -329,4 +341,3 @@ vibedft qe phonon debug review
 - `readiness` 与下游依赖在各任务中一致；
 - 至少一套 phonon 集成 fixture 验证每个子任务 evidence field；
 - 旧 `phonon` 单体代码只保留 adapter，不作为新功能入口。
-

@@ -345,7 +345,8 @@ structure 开始承担材料设计逻辑。
 
 ### 当前信号
 
-当前 `phonon/` 仍为单体。
+`phonon/` 核心 parser/monitor 仍保留，但当前已在 `phonon/stages.py` 做了
+任务分割 scaffold（`phonon_gamma` / `phonon_qgrid` / `phonon_dos` / `dielectric` / `born`）。
 
 ### 危害
 
@@ -358,7 +359,7 @@ structure 开始承担材料设计逻辑。
 
 ### 测试方式
 
-- 子任务 fixture。
+- Scaffold 单元测试覆盖任务列表、qualified 名称与默认阻断边界。
 
 ---
 
