@@ -14,7 +14,14 @@ def review_vc_relax_output(output: RelaxOutput) -> ReviewResult:
 
     base_result = review_relax_output(output)
     if base_result.status == "BLOCK":
-        return base_result
+        return ReviewResult(
+            status="BLOCK",
+            reasons=list(base_result.reasons),
+            evidence=_augment_vc_evidence(base_result.evidence, output),
+            allowed_downstream=[],
+            blocked_downstream=list(VC_RELAX_DOWNSTREAMS),
+            recommendations=list(base_result.recommendations),
+        )
 
     evidence = _augment_vc_evidence(base_result.evidence, output)
     reasons: list[str] = list(base_result.reasons)

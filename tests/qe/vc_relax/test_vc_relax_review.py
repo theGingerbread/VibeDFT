@@ -103,3 +103,12 @@ def test_review_vc_relax_output_block_when_variable_cell_not_enabled() -> None:
     assert result.status == "BLOCK"
     assert result.allowed_downstream == []
     assert set(result.blocked_downstream) == set(VC_RELAX_DOWNSTREAMS)
+
+
+def test_review_vc_relax_output_block_propagates_policy_blocked_downstream() -> None:
+    output = parse_vc_relax_output(_vc_pass_text().replace("JOB DONE.", "JOB END."), source="vc-relax.out")
+    result = review_vc_relax_output(output)
+
+    assert result.status == "BLOCK"
+    assert result.allowed_downstream == []
+    assert set(result.blocked_downstream) == set(VC_RELAX_DOWNSTREAMS)

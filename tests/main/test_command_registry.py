@@ -14,6 +14,26 @@ def test_command_registry_matches_qe_scf_review() -> None:
     assert remaining == ["scf.out", "--pretty"]
 
 
+def test_command_registry_matches_qe_relax_review() -> None:
+    spec, remaining = find_command(["qe", "relax", "review", "relax.out", "--output", "result.json"])
+
+    assert spec is not None
+    assert spec.command_id == "qe.relax.review"
+    assert spec.path == ("qe", "relax", "review")
+    assert remaining == ["relax.out", "--output", "result.json"]
+
+
+def test_command_registry_matches_qe_vc_relax_review() -> None:
+    spec, remaining = find_command(
+        ["qe", "vc-relax", "review", "vc-relax.out", "--fail-on-block", "x"]
+    )
+
+    assert spec is not None
+    assert spec.command_id == "qe.vc_relax.review"
+    assert spec.path == ("qe", "vc-relax", "review")
+    assert remaining == ["vc-relax.out", "--fail-on-block", "x"]
+
+
 def test_unknown_command_does_not_match_registry() -> None:
     spec, remaining = find_command(["qe", "scf", "status"])
 
