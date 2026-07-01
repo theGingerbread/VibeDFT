@@ -10,11 +10,12 @@ from typing import Callable, Sequence
 
 from vibedft._shared.contracts import CleanedResult
 from vibedft.calculator.qe.dos.clean import clean_dos_text
+from vibedft.calculator.qe.bands.clean import clean_bands_text
 from vibedft.calculator.qe.nscf.clean import clean_nscf_text
 from vibedft.calculator.qe.relax.clean import clean_relax_text
+from vibedft.calculator.qe.pdos.clean import clean_pdos_text
 from vibedft.calculator.qe.scf.clean import clean_scf_text
 from vibedft.calculator.qe.vc_relax.clean import clean_vc_relax_text
-from vibedft.calculator.qe.pdos.clean import clean_pdos_text
 from vibedft.main.envelopes import CommandEnvelope, error_envelope, ok_envelope
 
 
@@ -48,6 +49,21 @@ def _resolve_dos_data_file(output_file: Path) -> Path | None:
         output_file.with_suffix(".dos"),
         output_file.with_suffix(".dat"),
         output_file.with_suffix(".dos.dat"),
+    ]
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+
+    return None
+
+
+def _resolve_bands_data_file(output_file: Path) -> Path | None:
+    """Resolve optional bands data file from output-path sidecar naming conventions."""
+
+    candidates = [
+        output_file.with_suffix(".bands"),
+        output_file.with_suffix(".dat"),
+        output_file.with_suffix(".bands.dat"),
     ]
     for candidate in candidates:
         if candidate.is_file():
@@ -189,6 +205,20 @@ def _run_qe_pdos_review(argv: Sequence[str]) -> CommandExecution:
     )
 
 
+def _run_qe_bands_review(argv: Sequence[str]) -> CommandExecution:
+    def _clean(output_file: Path, source: str | Path | None) -> CleanedResult:
+        data_file = _resolve_bands_data_file(Path(output_file))
+        return clean_bands_text(Path(output_file), source=source, data_file=data_file)
+
+    return _run_clean_review_command(
+        argv,
+        command_id="qe.bands.review",
+        prog="vibedft qe bands review",
+        output_help="QE bands.x output file to review",
+        cleaner=_clean,
+    )
+
+
 def _run_qe_nscf_review(argv: Sequence[str]) -> CommandExecution:
     return _run_clean_review_command(
         argv,
@@ -255,6 +285,12 @@ COMMANDS = (
         path=("qe", "pdos", "review"),
         description="Review QE projwfc.x / PDOS output and emit CleanedResult JSON.",
         handler=_run_qe_pdos_review,
+    ),
+    CommandSpec(
+        command_id="qe.bands.review",
+        path=("qe", "bands", "review"),
+        description="Review QE bands.x output and emit CleanedResult JSON.",
+        handler=_run_qe_bands_review,
     ),
 )
 
