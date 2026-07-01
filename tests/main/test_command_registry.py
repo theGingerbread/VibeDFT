@@ -34,6 +34,15 @@ def test_command_registry_matches_qe_vc_relax_review() -> None:
     assert remaining == ["vc-relax.out", "--fail-on-block", "x"]
 
 
+def test_command_registry_matches_qe_nscf_review() -> None:
+    spec, remaining = find_command(["qe", "nscf", "review", "nscf.out", "--pretty"])
+
+    assert spec is not None
+    assert spec.command_id == "qe.nscf.review"
+    assert spec.path == ("qe", "nscf", "review")
+    assert remaining == ["nscf.out", "--pretty"]
+
+
 def test_unknown_command_does_not_match_registry() -> None:
     spec, remaining = find_command(["qe", "scf", "status"])
 
