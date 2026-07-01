@@ -15,6 +15,7 @@ from vibedft.calculator.qe.nscf.clean import clean_nscf_text
 from vibedft.calculator.qe.relax.clean import clean_relax_text
 from vibedft.calculator.qe.pdos.clean import clean_pdos_text
 from vibedft.calculator.qe.scf.clean import clean_scf_text
+from vibedft.calculator.qe.pp.clean import clean_pp_text
 from vibedft.calculator.qe.vc_relax.clean import clean_vc_relax_text
 from vibedft.main.envelopes import CommandEnvelope, error_envelope, ok_envelope
 
@@ -70,6 +71,32 @@ def _resolve_bands_data_file(output_file: Path) -> Path | None:
             return candidate
 
     return None
+
+
+def _resolve_pp_data_files(output_file: Path) -> list[Path]:
+    """Resolve pp artifact sidecars from common naming and per-output suffix conventions."""
+
+    candidate_exts = [
+        ".dat",
+        ".cube",
+        ".xsf",
+        ".pp",
+        ".pp.dat",
+        ".pp.cube",
+    ]
+    candidates: list[Path] = [output_file.with_suffix(ext) for ext in candidate_exts]
+    candidates.extend(output_file.parent.glob(f"{output_file.stem}.*"))
+
+    def _is_usable(path: Path) -> bool:
+        if not path.is_file():
+            return False
+        if path == output_file:
+            return False
+        suffixes = {".out", ".json", ".log"}
+        return path.suffix.lower() not in suffixes and path.name.lower() not in suffixes
+
+    filtered = [path for path in candidates if _is_usable(path)]
+    return sorted(set(filtered), key=lambda item: str(item))
 
 
 def _parse_embedded_pdos_filenames(text: str) -> list[str]:
@@ -219,6 +246,20 @@ def _run_qe_bands_review(argv: Sequence[str]) -> CommandExecution:
     )
 
 
+def _run_qe_pp_review(argv: Sequence[str]) -> CommandExecution:
+    def _clean(output_file: Path, source: str | Path | None) -> CleanedResult:
+        data_files = _resolve_pp_data_files(Path(output_file))
+        return clean_pp_text(Path(output_file), source=source, data_files=data_files)
+
+    return _run_clean_review_command(
+        argv,
+        command_id="qe.pp.review",
+        prog="vibedft qe pp review",
+        output_help="QE pp.x output file to review",
+        cleaner=_clean,
+    )
+
+
 def _run_qe_nscf_review(argv: Sequence[str]) -> CommandExecution:
     return _run_clean_review_command(
         argv,
@@ -291,6 +332,12 @@ COMMANDS = (
         path=("qe", "bands", "review"),
         description="Review QE bands.x output and emit CleanedResult JSON.",
         handler=_run_qe_bands_review,
+    ),
+    CommandSpec(
+        command_id="qe.pp.review",
+        path=("qe", "pp", "review"),
+        description="Review QE pp.x output and emit CleanedResult JSON.",
+        handler=_run_qe_pp_review,
     ),
 )
 

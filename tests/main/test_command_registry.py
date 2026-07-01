@@ -61,6 +61,15 @@ def test_command_registry_matches_qe_pdos_review() -> None:
     assert remaining == ["pdos.out", "--pretty"]
 
 
+def test_command_registry_matches_qe_pp_review() -> None:
+    spec, remaining = find_command(["qe", "pp", "review", "pp.out", "--pretty"])
+
+    assert spec is not None
+    assert spec.command_id == "qe.pp.review"
+    assert spec.path == ("qe", "pp", "review")
+    assert remaining == ["pp.out", "--pretty"]
+
+
 def test_command_registry_matches_qe_bands_review() -> None:
     spec, remaining = find_command(["qe", "bands", "review", "bands.out", "--pretty"])
 
