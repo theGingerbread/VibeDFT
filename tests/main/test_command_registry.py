@@ -43,6 +43,24 @@ def test_command_registry_matches_qe_nscf_review() -> None:
     assert remaining == ["nscf.out", "--pretty"]
 
 
+def test_command_registry_matches_qe_dos_review() -> None:
+    spec, remaining = find_command(["qe", "dos", "review", "dos.out", "--output", "result.json"])
+
+    assert spec is not None
+    assert spec.command_id == "qe.dos.review"
+    assert spec.path == ("qe", "dos", "review")
+    assert remaining == ["dos.out", "--output", "result.json"]
+
+
+def test_command_registry_matches_qe_pdos_review() -> None:
+    spec, remaining = find_command(["qe", "pdos", "review", "pdos.out", "--pretty"])
+
+    assert spec is not None
+    assert spec.command_id == "qe.pdos.review"
+    assert spec.path == ("qe", "pdos", "review")
+    assert remaining == ["pdos.out", "--pretty"]
+
+
 def test_unknown_command_does_not_match_registry() -> None:
     spec, remaining = find_command(["qe", "scf", "status"])
 

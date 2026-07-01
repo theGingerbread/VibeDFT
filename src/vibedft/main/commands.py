@@ -3,15 +3,18 @@
 from __future__ import annotations
 
 import argparse
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Sequence
 
 from vibedft._shared.contracts import CleanedResult
+from vibedft.calculator.qe.dos.clean import clean_dos_text
 from vibedft.calculator.qe.nscf.clean import clean_nscf_text
 from vibedft.calculator.qe.relax.clean import clean_relax_text
 from vibedft.calculator.qe.scf.clean import clean_scf_text
 from vibedft.calculator.qe.vc_relax.clean import clean_vc_relax_text
+from vibedft.calculator.qe.pdos.clean import clean_pdos_text
 from vibedft.main.envelopes import CommandEnvelope, error_envelope, ok_envelope
 
 
@@ -36,6 +39,55 @@ class CommandSpec:
 
 
 Cleaner = Callable[[str | Path, str | Path | None], CleanedResult]
+
+
+def _resolve_dos_data_file(output_file: Path) -> Path | None:
+    """Resolve an optional DOS data file from a standard sidecar naming convention."""
+
+    candidates = [
+        output_file.with_suffix(".dos"),
+        output_file.with_suffix(".dat"),
+        output_file.with_suffix(".dos.dat"),
+    ]
+    for candidate in candidates:
+        if candidate.is_file():
+            return candidate
+
+    return None
+
+
+def _parse_embedded_pdos_filenames(text: str) -> list[str]:
+    """Parse projection filenames from stdout-like text."""
+
+    return [
+        match
+        for match in re.findall(r"(\S+pdos[^\s,;]*)", text, flags=re.IGNORECASE)
+    ]
+
+
+def _resolve_pdos_projection_files(output_file: Path) -> list[Path]:
+    """Resolve projection files from output text or same-directory sidecars."""
+
+    if not output_file.is_file():
+        return []
+
+    text = output_file.read_text(encoding="utf-8", errors="replace")
+    candidate_names = _parse_embedded_pdos_filenames(text)
+
+    resolved: list[Path] = []
+    for name in candidate_names:
+        candidate = Path(name)
+        if not candidate.is_absolute():
+            candidate = output_file.parent / candidate
+        if candidate.is_file():
+            resolved.append(candidate)
+
+    if resolved:
+        # If parser output already advertises explicit filenames, trust that list.
+        return sorted(set(resolved), key=lambda item: str(item))
+
+    fallback = sorted(output_file.parent.glob("*.pdos*"))
+    return [path for path in fallback if path.is_file()]
 
 
 def _run_clean_review_command(
@@ -109,6 +161,34 @@ def _run_qe_vc_relax_review(argv: Sequence[str]) -> CommandExecution:
     )
 
 
+def _run_qe_dos_review(argv: Sequence[str]) -> CommandExecution:
+    def _clean(output_file: Path, source: str | Path | None) -> CleanedResult:
+        data_file = _resolve_dos_data_file(Path(output_file))
+        return clean_dos_text(Path(output_file), source=source, data_file=data_file)
+
+    return _run_clean_review_command(
+        argv,
+        command_id="qe.dos.review",
+        prog="vibedft qe dos review",
+        output_help="QE dos.x output file to review",
+        cleaner=_clean,
+    )
+
+
+def _run_qe_pdos_review(argv: Sequence[str]) -> CommandExecution:
+    def _clean(output_file: Path, source: str | Path | None) -> CleanedResult:
+        pdos_files = _resolve_pdos_projection_files(Path(output_file))
+        return clean_pdos_text(Path(output_file), source=source, pdos_files=pdos_files)
+
+    return _run_clean_review_command(
+        argv,
+        command_id="qe.pdos.review",
+        prog="vibedft qe pdos review",
+        output_help="QE projwfc.x / PDOS output file to review",
+        cleaner=_clean,
+    )
+
+
 def _run_qe_nscf_review(argv: Sequence[str]) -> CommandExecution:
     return _run_clean_review_command(
         argv,
@@ -163,6 +243,18 @@ COMMANDS = (
         path=("qe", "nscf", "review"),
         description="Review QE pw.x NSCF output and emit CleanedResult JSON.",
         handler=_run_qe_nscf_review,
+    ),
+    CommandSpec(
+        command_id="qe.dos.review",
+        path=("qe", "dos", "review"),
+        description="Review QE dos.x output and emit CleanedResult JSON.",
+        handler=_run_qe_dos_review,
+    ),
+    CommandSpec(
+        command_id="qe.pdos.review",
+        path=("qe", "pdos", "review"),
+        description="Review QE projwfc.x / PDOS output and emit CleanedResult JSON.",
+        handler=_run_qe_pdos_review,
     ),
 )
 
